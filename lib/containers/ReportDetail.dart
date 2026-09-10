@@ -1,11 +1,8 @@
-import 'dart:io';
 import 'package:flutter/services.dart';
 
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
-import "../presentation/WebViewNavBar.dart";
 import '../styles/Themes.dart';
 import '../models/analysis.dart';
 import '../models/menu.dart';
@@ -14,17 +11,15 @@ import '../services/analysis.dart';
 class ReportDetail extends StatefulWidget {
   final Menu reportType;
 
-  ReportDetail({this.reportType});
+  ReportDetail({required this.reportType});
 
   @override
   _ReportDetailState createState() =>
       _ReportDetailState(reportType: reportType);
 }
 
-class _ReportDetailState extends State<ReportDetail>
-    implements WebViewNavBarDelegate {
+class _ReportDetailState extends State<ReportDetail> {
   final Menu reportType;
-  final HttpClient httpClient = new HttpClient();
 
   List<Map<String, dynamic>> _detailData = [];
   String _detailDes = "";
@@ -33,23 +28,25 @@ class _ReportDetailState extends State<ReportDetail>
 
   // ui control
   bool _showDes = false;
+  bool _loading = true;
+  bool _failed = false;
 
-  WebViewController controller;
+  _ReportDetailState({required this.reportType});
 
-  _ReportDetailState({this.reportType}) {
+  @override
+  void initState() {
+    super.initState();
     fetchData();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-            title: Text(
-          reportType.name,
-        )),
-        //   body: _reportDetail(context),
-        // );
-        body: Column(children: [
+      appBar: AppBar(title: Text(reportType.name)),
+      //   body: _reportDetail(context),
+      // );
+      body: Column(
+        children: [
           Container(height: WHITE_SPACE_L),
           Expanded(child: _reportDetail(context)),
           Divider(),
@@ -57,25 +54,43 @@ class _ReportDetailState extends State<ReportDetail>
             margin: EdgeInsets.all(WHITE_SPACE_S),
             clipBehavior: Clip.antiAlias,
             child: Container(
-                padding: EdgeInsets.all(WHITE_SPACE_M),
-                child: Column(children: [
+              padding: EdgeInsets.all(WHITE_SPACE_M),
+              child: Column(
+                children: [
                   IconButton(
-                      icon: _showDes
-                          ? Icon(Icons.arrow_circle_down)
-                          : Icon(Icons.arrow_circle_up),
-                      onPressed: () {
-                        setState(() {
-                          _showDes = !_showDes;
-                        });
-                      }),
+                    icon: _showDes
+                        ? Icon(Icons.arrow_circle_down)
+                        : Icon(Icons.arrow_circle_up),
+                    onPressed: () {
+                      setState(() {
+                        _showDes = !_showDes;
+                      });
+                    },
+                  ),
                   _showDes ? Text(_detailDes) : Container(),
-                  Text('更新时间: ' + _detailTime)
-                ])),
+                  Text('更新时间: ' + _detailTime),
+                ],
+              ),
+            ),
           ),
-        ]));
+        ],
+      ),
+    );
   }
 
   Widget _reportDetail(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_failed)
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('数据加载失败，请检查网络后重试'),
+            TextButton(onPressed: fetchData, child: const Text('重试')),
+          ],
+        ),
+      );
+    if (_detailData.isEmpty) return const Center(child: Text('暂无数据'));
     return ListView.builder(
       itemCount: _detailData.length,
       itemBuilder: (context, i) {
@@ -87,66 +102,89 @@ class _ReportDetailState extends State<ReportDetail>
   Widget _buildRow(item, BuildContext context) {
     String code = item["code"] as String;
     String name = item["name"] as String;
-    List<dynamic> detail = (item["data"] as List);
+    List<dynamic> detail = List.of(item["data"] as List);
     List<Widget> line = [];
 
     line.add(Container(child: SectionTitle(title: "$name [${code.trim()}]")));
     line.add(Divider());
     detail.forEach((element) {
-      line.add(Row(children: [
-        Text(
-            "BS: ${element["setup"] > 0 ? _formatter.format(DateTime.fromMillisecondsSinceEpoch(element["setup"])) : '未出现'} (${element['setupNumber']})",
-            style: TextStyle(
+      line.add(
+        Row(
+          children: [
+            Text(
+              "BS: ${element["setup"] > 0 ? _formatter.format(DateTime.fromMillisecondsSinceEpoch(element["setup"])) : '未出现'} (${element['setupNumber']})",
+              style: TextStyle(
                 color: element['setupNumber'] >= 9
                     ? Colors.redAccent
-                    : Colors.black),
-            overflow: TextOverflow.clip,
-            textAlign: TextAlign.start)
-      ]));
-      line.add(Row(children: [
-        Text(
-            "BC: ${element["countdown"] > 0 ? _formatter.format(DateTime.fromMillisecondsSinceEpoch(element["countdown"])) : '未出现'} (${element['countdownNumber']})",
-            style: TextStyle(fontWeight: FontWeight.bold),
-            overflow: TextOverflow.clip,
-            textAlign: TextAlign.start)
-      ]));
-      line.add(Row(children: [
-        Container(
-          height: WHITE_SPACE_S,
-        )
-      ]));
+                    : Colors.black,
+              ),
+              overflow: TextOverflow.clip,
+              textAlign: TextAlign.start,
+            ),
+          ],
+        ),
+      );
+      line.add(
+        Row(
+          children: [
+            Text(
+              "BC: ${element["countdown"] > 0 ? _formatter.format(DateTime.fromMillisecondsSinceEpoch(element["countdown"])) : '未出现'} (${element['countdownNumber']})",
+              style: TextStyle(fontWeight: FontWeight.bold),
+              overflow: TextOverflow.clip,
+              textAlign: TextAlign.start,
+            ),
+          ],
+        ),
+      );
+      line.add(Row(children: [Container(height: WHITE_SPACE_S)]));
     });
 
-    line.add(ButtonBar(children: [
-      RaisedButton(
-          child: Text("复制股票代码"),
-          onPressed: () {
-            Clipboard.setData(ClipboardData(text: item['code']));
-          })
-    ]));
+    line.add(
+      OverflowBar(
+        children: [
+          ElevatedButton(
+            child: Text("复制股票代码"),
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: item['code']));
+            },
+          ),
+        ],
+      ),
+    );
 
     return Container(
       child: Card(
         child: Container(
-            padding: EdgeInsets.all(WHITE_SPACE_M),
-            child: Column(children: line)),
+          padding: EdgeInsets.all(WHITE_SPACE_M),
+          child: Column(children: line),
+        ),
       ),
     );
   }
 
-  fetchData() async {
-    Analysis data = await AnalysisService.getAnalysis(reportType.url);
+  Future<void> fetchData() async {
+    setState(() {
+      _loading = true;
+      _failed = false;
+    });
+    Analysis? data = await AnalysisService.getAnalysis(reportType.url);
     if (!mounted) return;
+    setState(() {
+      _loading = false;
+      _failed = data == null;
+    });
     if (data != null) {
       setState(() {
         _detailData.clear();
         data.resultList.forEach((element) {
-          var flag = element["data"] != null ? element["data"]["flag"] : [];
+          var flag = element["data"] is Map
+              ? (element["data"]["flag"] as List? ?? [])
+              : [];
           _detailData.add({
-            "msg": element["msg"] as String,
+            "msg": (element["msg"] ?? "").toString(),
             "name": element["name"] as String,
             "code": element["code"] as String,
-            "url": element["url"] as String,
+            "url": (element["url"] ?? "").toString(),
             "data": flag,
           });
         });
@@ -156,11 +194,11 @@ class _ReportDetailState extends State<ReportDetail>
               right['data'] is List &&
               (right['data'] as List).length > 0 &&
               (left['data'] as List).length > 0) {
-            return (right['data'] as List)
-                .last["countdown"]
-                .compareTo((left['data'] as List).last["countdown"]);
+            return (right['data'] as List).last["countdown"].compareTo(
+              (left['data'] as List).last["countdown"],
+            );
           } else {
-            return 1;
+            return 0;
           }
         });
         _detailDes = data.description;
@@ -177,10 +215,7 @@ class _ReportDetailState extends State<ReportDetail>
 }
 
 class SectionTitle extends StatelessWidget {
-  const SectionTitle({
-    Key key,
-    this.title,
-  }) : super(key: key);
+  const SectionTitle({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
@@ -190,7 +225,7 @@ class SectionTitle extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(4, 4, 4, 12),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: Text(title, style: Theme.of(context).textTheme.subtitle1),
+        child: Text(title, style: Theme.of(context).textTheme.titleMedium),
       ),
     );
   }

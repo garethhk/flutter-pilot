@@ -1,53 +1,31 @@
-import 'dart:io';
-import 'dart:convert';
-
-import '../constants/ReportType.dart';
+import '../constants/reportType.dart';
 import '../models/menu.dart';
+import 'api_client.dart';
 
 class ConfigService {
-  static final HttpClient httpClient = new HttpClient();
-
-  static List<Menu> getLocalMenu() {
-    List<Menu> menus = [];
-    REPORT_TYPES.forEach((e) => menus.add(Menu.fromJson(e)));
-    return menus;
-  }
-
+  static List<Menu> getLocalMenu() => REPORT_TYPES
+      .map((item) => Menu.fromJson(Map<String, dynamic>.from(item)))
+      .toList();
   static Future<List<Menu>> getMenu() async {
-    List<Menu> menus = [];
-    var uri = Uri.parse(MEMU_URL);
-    var request = await httpClient.getUrl(uri);
-    var response = await request.close();
-    // default
-    REPORT_TYPES.forEach((e) => menus.add(Menu.fromJson(e)));
-
-    if (response.statusCode == HttpStatus.ok) {
-      var json = await response.transform(utf8.decoder).join();
-      List data = jsonDecode(json);
-      // merge cloud config
-      data.forEach((e) {
-        var item = Menu.fromJson(e);
-        var localItem = menus.firstWhere((element) => element.id == item.id,
-            orElse: () => null);
-        // if cloud config version higher than local, replace the item
-        if (localItem != null &&
-            localItem.version != null &&
-            item.version != null &&
-            localItem.version < item.version) {
-          localItem.name = item.name;
-          localItem.router = item.router;
-          localItem.url = item.url;
-          localItem.html = item.html;
-          localItem.image = item.image;
-          localItem.description = item.description;
-        }
-
-        // add new item from cloud
-        if (item.id != null && localItem == null) {
+    final menus = getLocalMenu();
+    try {
+      final data = await ApiClient.get(Uri.parse(MEMU_URL));
+      if (data is! List) throw const FormatException('Expected menu list');
+      for (final json in data) {
+        if (json is! Map<String, dynamic>)
+          throw const FormatException('Expected menu object');
+        final item = Menu.fromJson(json);
+        if (item.id.isEmpty) continue;
+        final index = menus.indexWhere((local) => local.id == item.id);
+        if (index == -1) {
           menus.add(item);
+        } else if (item.version > menus[index].version) {
+          menus[index] = item;
         }
-      });
+      }
+      return menus;
+    } on Exception {
+      return getLocalMenu();
     }
-    return menus;
   }
 }

@@ -1,310 +1,233 @@
-import 'dart:io';
 import 'package:extended_image/extended_image.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:foo/services/photoGallery.dart';
-// import 'package:image_picker_saver/image_picker_saver.dart';
-
-import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import "../presentation/WebViewNavBar.dart";
-import '../styles/Themes.dart';
 import '../models/menu.dart';
+import '../models/question.dart';
+import '../services/photoGallery.dart';
+import '../presentation/web_page.dart';
 
 class PhotoGalleryList extends StatefulWidget {
+  const PhotoGalleryList({super.key, required this.reportType});
   final Menu reportType;
-
-  PhotoGalleryList({this.reportType});
-
   @override
-  _PhotoGalleryListState createState() =>
-      _PhotoGalleryListState(reportType: reportType);
+  State<PhotoGalleryList> createState() => _PhotoGalleryListState();
 }
 
-class _PhotoGalleryListState extends State<PhotoGalleryList>
-    implements WebViewNavBarDelegate {
-  final Menu reportType;
-  final HttpClient httpClient = new HttpClient();
+class _PhotoGalleryListState extends State<PhotoGalleryList> {
+  final _textController = TextEditingController();
+  List<Question> _items = [];
+  final Map<String, List<Question>> _previews = {};
+  bool _loading = true;
+  bool _failed = false;
+  bool _downloading = false;
+  int _generation = 0;
 
-  List<Map<String, dynamic>> _detailData = [];
-  String _detailUrl = "";
-
-  // ui control
-  bool _showDes = false;
-  TextEditingController _textController = TextEditingController();
-  WebViewController controller;
-
-  _PhotoGalleryListState({this.reportType}) {
-    fetchData();
+  @override
+  void initState() {
+    super.initState();
+    _fetch();
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-            title: Text(
-          reportType.name,
-        )),
-        //   body: _PhotoGalleryList(context),
-        // );
-        body: Column(children: [
-          Container(height: WHITE_SPACE_L),
-          Expanded(child: _PhotoGalleryList(context)),
-          Card(
-            margin: EdgeInsets.all(WHITE_SPACE_S),
-            clipBehavior: Clip.antiAlias,
-            child: Container(
-                padding: EdgeInsets.all(WHITE_SPACE_M),
-                child: Column(children: [
-                  IconButton(
-                      icon: _showDes
-                          ? Icon(Icons.arrow_circle_down)
-                          : Icon(Icons.arrow_circle_up),
-                      onPressed: () {
-                        setState(() {
-                          _showDes = !_showDes;
-                        });
-                      }),
-                  _showDes
-                      ? Container(
-                          child: Column(
-                          children: [
-                            TextField(
-                              controller: _textController,
-                              onChanged: (v) {
-                                _detailUrl = v;
-                              },
-                              decoration: InputDecoration(
-                                prefixIcon: Icon(Icons.link),
-                                suffixIcon: IconButton(
-                                  onPressed: _textController.clear,
-                                  icon: Icon(Icons.clear),
-                                ),
-                              ),
-                            ),
-                            ElevatedButton(
-                                child: Text("下载"),
-                                onPressed: () {
-                                  downloadDetail(_detailUrl);
-                                })
-                          ],
-                        ))
-                      : Container(),
-                ])),
-          ),
-        ]));
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
   }
 
-  Widget _PhotoGalleryList(BuildContext context) {
-    return ListView.builder(
-      itemCount: _detailData.length,
-      itemBuilder: (context, i) {
-        return _buildRow(_detailData[i], context, i);
-      },
-    );
-  }
-
-  Widget _buildRow(item, BuildContext context, int index) {
-    String key = item["key"] as String;
-
-    List<Widget> line = [];
-
-    key = key.replaceFirst("resources/zhihu-images/", "");
-    line.add(Container(child: SectionTitle(title: "$key")));
-
-    bool isImage = item["link"].indexOf(".jpg") > -1;
-    bool isZhihuLink = item["zhihuLink"] != "";
-    bool isAnswer = !isImage && (item["zhihuLink"].indexOf("answer") > -1);
-
-    if (isImage) {
-      // display image
-      line.add(Container(
-        child: ExtendedImage.network(
-          item["link"] ?? DEFAULT_REPORT_IMG,
-          height: 550,
-          fit: BoxFit.fitWidth,
-          cache: true,
-        ),
-      ));
-    }
-
-    if (isAnswer) {
-      if (null == item["thumb"]) {
-        fetchFirstImage(item["link"] as String, index);
-      }
-      if (null != item["count"]) {
-        line.add(Container(
-          child: Text("共 " + item["count"] + " 张"),
-        ));
-      }
-      line.add(Container(
-        child: ExtendedImage.network(
-          item["thumb"] ?? DEFAULT_REPORT_IMG,
-          height: 550,
-          fit: BoxFit.fitWidth,
-          cache: true,
-        ),
-      ));
-    }
-
-    // action bar
-    line.add(ButtonBar(children: [
-      ElevatedButton(
-          child: Text(isImage ? "下载" : "打开"),
-          onPressed: isImage
-              ? () {
-                  saveNetworkImageToPhoto(item["link"]);
-                }
-              : () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    Menu report = new Menu(url: item["link"], name: key);
-                    return new PhotoGalleryList(reportType: report);
-                  }));
-                }),
-      ElevatedButton(
-          child: Text(isZhihuLink ? "打开知乎" : "无链接"),
-          onPressed: isZhihuLink
-              ? () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    var isLoading = false;
-                    return Scaffold(
-                      appBar: AppBar(title: Text("知乎")),
-                      body: Stack(children: [
-                        WebView(
-                          initialUrl: item["zhihuLink"],
-                          javascriptMode: JavascriptMode.unrestricted,
-                          onWebViewCreated:
-                              (WebViewController webViewController) {
-                            controller = webViewController;
-                          },
-                          navigationDelegate: (NavigationRequest request) {
-                            print(request.url);
-                            if (request.url.indexOf("http") == -1) {
-                              _launchURL(request.url);
-                            }
-                            setState(() {
-                              isLoading = true; // 开始访问页面，更新状态
-                            });
-                            return NavigationDecision.navigate;
-                          },
-                          onPageFinished: (String url) {
-                            setState(() {
-                              isLoading = false; // 页面加载完成，更新状态
-                            });
-                          },
-                        ),
-                        isLoading
-                            ? Container(
-                                child: Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              )
-                            : Container(),
-                      ]),
-                      bottomNavigationBar: WebViewNavBar(delegateWidget: this),
-                    );
-                  }));
-                }
-              : () {})
-    ]));
-
-    return Container(
-      child: Card(
-        child: Container(
-            padding: EdgeInsets.all(WHITE_SPACE_M),
-            child: Column(children: line)),
-      ),
-    );
-  }
-
-  Future<bool> saveNetworkImageToPhoto(String url,
-      {bool useCache: true}) async {
-    // var data = await getNetworkImageData(url, useCache: useCache);
-    // var filePath = await ImagePickerSaver.saveFile(fileData: data);
-    // return filePath != null && filePath != "";
-    return false;
-  }
-
-  void downloadDetail(url) async {
-    bool res = await PhotoGalleryService.downloadDetail(url);
-    if (res) {
-      Fluttertoast.showToast(msg: "成功", backgroundColor: Colors.green);
-    } else {
-      Fluttertoast.showToast(msg: "失败", backgroundColor: Colors.red);
-    }
-  }
-
-  void fetchData() async {
-    List data = await PhotoGalleryService.getList(reportType.url);
-    if (!mounted) return;
-    if (data != null) {
+  Future<void> _fetch() async {
+    final generation = ++_generation;
+    setState(() {
+      _loading = true;
+      _failed = false;
+    });
+    try {
+      final items = await PhotoGalleryService.getList(widget.reportType.url);
+      if (!mounted || generation != _generation) return;
       setState(() {
-        _detailData.clear();
-        data.forEach((element) {
-          // if tag model, reformat model
-          if (isTag(element)) {
-            String tag = element.tag as String;
-            int total = element.total as int;
-            _detailData.add({
-              "key": tag + "[" + total.toString() + "]",
-              "link": element.imageRecords as String,
-              "zhihuLink": "",
-              "parentLink": "",
-            });
-          } else {
-            _detailData.add({
-              "key": element.key as String,
-              "link": element.link as String,
-              "zhihuLink": element.zhihuLink as String,
-              "parentLink": element.parentLink as String,
-            });
-          }
+        _items = items;
+        _loading = false;
+        _previews.clear();
+      });
+      // Fetch previews once per response, never as a side effect of build().
+      for (final item in items.where(
+        (item) => item.zhihuLink.contains('answer') && !_isImage(item.link),
+      )) {
+        try {
+          final preview = await PhotoGalleryService.getList(item.link);
+          if (!mounted || generation != _generation) return;
+          setState(() => _previews[item.link] = preview);
+        } on Exception {
+          /* A missing preview does not hide the gallery. */
+        }
+      }
+    } on Exception {
+      if (mounted && generation == _generation)
+        setState(() {
+          _loading = false;
+          _failed = true;
         });
-      });
-    } else {
-      setState(() {
-        _detailData = [];
-      });
     }
   }
 
-  void fetchFirstImage(String url, int index) async {
-    List data = await PhotoGalleryService.getList(url);
+  bool _isImage(String url) => RegExp(
+    r'\.(jpe?g|png|webp|gif)$',
+    caseSensitive: false,
+  ).hasMatch(Uri.tryParse(url)?.path ?? '');
+  void _message(String message) {
+    if (mounted)
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _download() async {
+    setState(() => _downloading = true);
+    final result = await PhotoGalleryService.downloadDetail(
+      _textController.text.trim(),
+    );
     if (!mounted) return;
-    if (data != null && data.length > 0) {
-      setState(() {
-        _detailData[index]["thumb"] = data[0].link as String;
-        _detailData[index]["count"] = data.length.toString();
-      });
+    setState(() => _downloading = false);
+    _message(result ? '已提交下载请求' : '下载请求失败，请检查链接及网络');
+  }
+
+  Future<void> _openImage(String link) async {
+    try {
+      final uri = Uri.parse(link);
+      if (!['http', 'https'].contains(uri.scheme) ||
+          !await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        _message('无法打开图片');
+      }
+    } on Exception {
+      _message('无法打开图片');
     }
   }
-
-  bool isTag(item) {
-    return item.tag != null;
-  }
-
-  void _launchURL(url) async =>
-      await canLaunch(url) ? await launch(url) : throw 'Could not launch $url';
-}
-
-class SectionTitle extends StatelessWidget {
-  const SectionTitle({
-    Key key,
-    this.title,
-  }) : super(key: key);
-
-  final String title;
 
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 4, 4, 12),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Text(title, style: Theme.of(context).textTheme.headline6),
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: Text(widget.reportType.name)),
+    body: SafeArea(
+      child: Column(
+        children: [
+          Expanded(
+            child: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : _failed
+                ? Center(
+                    child: TextButton(
+                      onPressed: _fetch,
+                      child: const Text('加载失败，点击重试'),
+                    ),
+                  )
+                : _items.isEmpty
+                ? const Center(child: Text('暂无图片'))
+                : ListView.builder(
+                    itemCount: _items.length,
+                    itemBuilder: (context, index) {
+                      final item = _items[index];
+                      final isTag = item.tag.isNotEmpty;
+                      final title = isTag
+                          ? '${item.tag}[${item.total}]'
+                          : item.key.replaceFirst(
+                              'resources/zhihu-images/',
+                              '',
+                            );
+                      final link = isTag ? item.imageRecords : item.link;
+                      final preview = _previews[link];
+                      final image = _isImage(link)
+                          ? link
+                          : (preview != null && preview.isNotEmpty
+                                ? preview.first.link
+                                : null);
+                      return Card(
+                        margin: const EdgeInsets.all(12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                title,
+                                style: Theme.of(context).textTheme.titleLarge,
+                              ),
+                              if (preview != null)
+                                Text('共 ${preview.length} 张'),
+                              if (image != null)
+                                ExtendedImage.network(
+                                  image,
+                                  height: 400,
+                                  fit: BoxFit.contain,
+                                  cache: true,
+                                ),
+                              Wrap(
+                                spacing: 8,
+                                children: [
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      if (_isImage(link)) {
+                                        _openImage(link);
+                                      } else {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => PhotoGalleryList(
+                                              reportType: Menu(
+                                                url: link,
+                                                name: title,
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    child: Text(_isImage(link) ? '打开原图' : '打开'),
+                                  ),
+                                  if (item.zhihuLink.isNotEmpty)
+                                    ElevatedButton(
+                                      onPressed: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => WebPage(
+                                            title: '知乎',
+                                            url: item.zhihuLink,
+                                          ),
+                                        ),
+                                      ),
+                                      child: const Text('打开知乎'),
+                                    ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          ExpansionTile(
+            title: const Text('下载相簿'),
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: TextField(
+                  controller: _textController,
+                  decoration: InputDecoration(
+                    labelText: '相簿链接',
+                    prefixIcon: const Icon(Icons.link),
+                    suffixIcon: IconButton(
+                      onPressed: _textController.clear,
+                      icon: const Icon(Icons.clear),
+                    ),
+                  ),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: _downloading ? null : _download,
+                child: Text(_downloading ? '提交中…' : '下载'),
+              ),
+            ],
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
 }

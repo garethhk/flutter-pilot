@@ -1,12 +1,9 @@
-import 'dart:io';
-
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter/services.dart';
 
-import '../constants/ReportType.dart';
-import '../presentation/WebViewNavBar.dart';
+import '../constants/reportType.dart';
+import '../presentation/web_page.dart';
 import '../styles/Themes.dart';
 import '../models/analysis.dart';
 import '../models/menu.dart';
@@ -15,17 +12,15 @@ import '../services/analysis.dart';
 class DeMarkReport extends StatefulWidget {
   final Menu reportType;
 
-  DeMarkReport({this.reportType});
+  DeMarkReport({required this.reportType});
 
   @override
   _DeMarkReportState createState() =>
       _DeMarkReportState(reportType: reportType);
 }
 
-class _DeMarkReportState extends State<DeMarkReport>
-    implements WebViewNavBarDelegate {
+class _DeMarkReportState extends State<DeMarkReport> {
   final Menu reportType;
-  final HttpClient httpClient = new HttpClient();
 
   List<Map<String, dynamic>> _detailData = [];
   String _detailDes = "";
@@ -34,22 +29,24 @@ class _DeMarkReportState extends State<DeMarkReport>
 
   // ui control
   bool _showDes = false;
+  bool _loading = true;
+  bool _failed = false;
 
-  WebViewController controller;
+  _DeMarkReportState({required this.reportType});
 
-  _DeMarkReportState({this.reportType}) {
+  @override
+  void initState() {
+    super.initState();
     fetchData();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-            title: Text(
-          reportType.name,
-        )),
-        // );
-        body: Column(children: [
+      appBar: AppBar(title: Text(reportType.name)),
+      // );
+      body: Column(
+        children: [
           Container(height: WHITE_SPACE_L),
           Expanded(child: _DeMarkReport(context)),
           Divider(),
@@ -57,25 +54,43 @@ class _DeMarkReportState extends State<DeMarkReport>
             margin: EdgeInsets.all(WHITE_SPACE_S),
             clipBehavior: Clip.antiAlias,
             child: Container(
-                padding: EdgeInsets.all(WHITE_SPACE_M),
-                child: Column(children: [
+              padding: EdgeInsets.all(WHITE_SPACE_M),
+              child: Column(
+                children: [
                   IconButton(
-                      icon: _showDes
-                          ? Icon(Icons.arrow_circle_down)
-                          : Icon(Icons.arrow_circle_up),
-                      onPressed: () {
-                        setState(() {
-                          _showDes = !_showDes;
-                        });
-                      }),
+                    icon: _showDes
+                        ? Icon(Icons.arrow_circle_down)
+                        : Icon(Icons.arrow_circle_up),
+                    onPressed: () {
+                      setState(() {
+                        _showDes = !_showDes;
+                      });
+                    },
+                  ),
                   _showDes ? Text(_detailDes) : Container(),
-                  Text('更新时间: ' + _detailTime)
-                ])),
+                  Text('更新时间: ' + _detailTime),
+                ],
+              ),
+            ),
           ),
-        ]));
+        ],
+      ),
+    );
   }
 
   Widget _DeMarkReport(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_failed)
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('数据加载失败，请检查网络后重试'),
+            TextButton(onPressed: fetchData, child: const Text('重试')),
+          ],
+        ),
+      );
+    if (_detailData.isEmpty) return const Center(child: Text('暂无数据'));
     return ListView.builder(
       itemCount: _detailData.length,
       itemBuilder: (context, i) {
@@ -87,7 +102,7 @@ class _DeMarkReportState extends State<DeMarkReport>
   Widget _buildRow(item, BuildContext context) {
     String code = item["code"] as String;
     String name = item["name"] as String;
-    List<dynamic> detail = (item["data"] as List);
+    List<dynamic> detail = List.of(item["data"] as List);
     List<Widget> line = [];
 
     line.add(Container(child: SectionTitle(title: "$name [${code.trim()}]")));
@@ -96,105 +111,105 @@ class _DeMarkReportState extends State<DeMarkReport>
       detail.removeRange(0, detail.length - 2);
     }
     detail.forEach((element) {
-      line.add(Row(children: [
-        Text(
-            "BS: ${element["setup"] > 0 ? _formatter.format(DateTime.fromMillisecondsSinceEpoch(element["setup"])) : '未出现'} (${element['setupNumber']})",
-            style: TextStyle(
+      line.add(
+        Row(
+          children: [
+            Text(
+              "BS: ${element["setup"] > 0 ? _formatter.format(DateTime.fromMillisecondsSinceEpoch(element["setup"])) : '未出现'} (${element['setupNumber']})",
+              style: TextStyle(
                 color: element['setupNumber'] >= 9
                     ? Colors.redAccent
-                    : Colors.black),
-            overflow: TextOverflow.clip,
-            textAlign: TextAlign.start)
-      ]));
-      line.add(Row(children: [
-        Text(
-            "BC: ${element["countdown"] > 0 ? _formatter.format(DateTime.fromMillisecondsSinceEpoch(element["countdown"])) : '未出现'} (${element['countdownNumber']})",
-            style: TextStyle(fontWeight: FontWeight.bold),
-            overflow: TextOverflow.clip,
-            textAlign: TextAlign.start)
-      ]));
-      line.add(Row(children: [
-        Container(
-          height: WHITE_SPACE_S,
-        )
-      ]));
+                    : Colors.black,
+              ),
+              overflow: TextOverflow.clip,
+              textAlign: TextAlign.start,
+            ),
+          ],
+        ),
+      );
+      line.add(
+        Row(
+          children: [
+            Text(
+              "BC: ${element["countdown"] > 0 ? _formatter.format(DateTime.fromMillisecondsSinceEpoch(element["countdown"])) : '未出现'} (${element['countdownNumber']})",
+              style: TextStyle(fontWeight: FontWeight.bold),
+              overflow: TextOverflow.clip,
+              textAlign: TextAlign.start,
+            ),
+          ],
+        ),
+      );
+      line.add(Row(children: [Container(height: WHITE_SPACE_S)]));
     });
 
-    line.add(ButtonBar(children: [
-      RaisedButton(
-          child: Text("DeMark 回溯"),
-          onPressed: () {
-            Navigator.push(context, MaterialPageRoute(
-              builder: (context) {
-                var isLoading = false;
-                return Scaffold(
-                  appBar: AppBar(title: Text("DeMark 回溯")),
-                  body: Stack(children: [
-                    WebView(
-                      initialUrl:
-                          DEMARK_CHART_URL.replaceFirst(STOCK_NUM, code),
-                      javascriptMode: JavascriptMode.unrestricted,
-                      onWebViewCreated: (WebViewController webViewController) {
-                        controller = webViewController;
-                        // _loadHtmlFromAssets(
-                        //     DEMARK_CHART_URL.replaceFirst(STOCK_NUM, code));
-                      },
-                      navigationDelegate: (NavigationRequest request) {
-                        setState(() {
-                          isLoading = true; // 开始访问页面，更新状态
-                        });
-                        return NavigationDecision.navigate;
-                      },
-                      onPageFinished: (String url) {
-                        setState(() {
-                          isLoading = false; // 页面加载完成，更新状态
-                        });
-                      },
-                    ),
-                    isLoading
-                        ? Container(
-                            child: Center(
-                              child: CircularProgressIndicator(),
-                            ),
-                          )
-                        : Container(),
-                  ]),
-                  bottomNavigationBar: WebViewNavBar(delegateWidget: this),
-                );
-              },
-            ));
-          }),
-      RaisedButton(
-          child: Text("复制股票代码"),
-          onPressed: () {
-            Clipboard.setData(ClipboardData(text: item['code']));
-          })
-    ]));
+    line.add(
+      OverflowBar(
+        children: [
+          ElevatedButton(
+            child: Text("DeMark 回溯"),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) {
+                    return WebPage(
+                      title: "DeMark 回溯",
+                      url: DEMARK_CHART_URL.replaceFirst(
+                        STOCK_NUM,
+                        Uri.encodeQueryComponent(code),
+                      ),
+                      localChart: true,
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+          ElevatedButton(
+            child: Text("复制股票代码"),
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: item['code']));
+            },
+          ),
+        ],
+      ),
+    );
 
     return Container(
       child: Card(
         child: Container(
-            padding: EdgeInsets.all(WHITE_SPACE_M),
-            child: Column(children: line)),
+          padding: EdgeInsets.all(WHITE_SPACE_M),
+          child: Column(children: line),
+        ),
       ),
     );
   }
 
-  fetchData() async {
-    Analysis data = await AnalysisService.getAnalysis(reportType.url);
+  Future<void> fetchData() async {
+    setState(() {
+      _loading = true;
+      _failed = false;
+    });
+    Analysis? data = await AnalysisService.getAnalysis(reportType.url);
     if (!mounted) return;
+    setState(() {
+      _loading = false;
+      _failed = data == null;
+    });
     if (data != null) {
       setState(() {
         _detailData.clear();
         data.resultList.forEach((element) {
-          var flag = element["data"] != null ? element["data"]["flag"] : [];
+          var flag = element["data"] is Map
+              ? (element["data"]["flag"] as List? ?? [])
+              : [];
           // 去掉后端没有 flag 的垃圾数据
           if (flag.length > 0) {
             _detailData.add({
-              "msg": element["msg"] as String,
+              "msg": (element["msg"] ?? "").toString(),
               "name": element["name"] as String,
               "code": element["code"] as String,
-              "url": element["url"] as String,
+              "url": (element["url"] ?? "").toString(),
               "data": flag,
             });
           }
@@ -205,11 +220,11 @@ class _DeMarkReportState extends State<DeMarkReport>
               right['data'] is List &&
               (right['data'] as List).length > 0 &&
               (left['data'] as List).length > 0) {
-            return (right['data'] as List)
-                .last["countdown"]
-                .compareTo((left['data'] as List).last["countdown"]);
+            return (right['data'] as List).last["countdown"].compareTo(
+              (left['data'] as List).last["countdown"],
+            );
           } else {
-            return 1;
+            return 0;
           }
         });
         _detailDes = data.description;
@@ -226,10 +241,7 @@ class _DeMarkReportState extends State<DeMarkReport>
 }
 
 class SectionTitle extends StatelessWidget {
-  const SectionTitle({
-    Key key,
-    this.title,
-  }) : super(key: key);
+  const SectionTitle({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
@@ -239,7 +251,7 @@ class SectionTitle extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(4, 4, 4, 12),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: Text(title, style: Theme.of(context).textTheme.subtitle1),
+        child: Text(title, style: Theme.of(context).textTheme.titleMedium),
       ),
     );
   }

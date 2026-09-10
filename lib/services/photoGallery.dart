@@ -1,43 +1,36 @@
-import 'dart:io';
-import 'dart:convert';
-
-import 'package:foo/models/question.dart';
-
-import '../constants/ReportType.dart';
-import '../models/analysis.dart';
+import '../constants/reportType.dart';
+import '../models/question.dart';
+import 'api_client.dart';
 
 class PhotoGalleryService {
-  static final HttpClient httpClient = new HttpClient();
-
   static Future<List<Question>> getList(String url) async {
-    List<Question> keyList = [];
-    var uri =
-        Uri.parse((url.indexOf("http") == 0 ? "" : PHOTO_GALLERY_HOST) + url);
-    var request = await httpClient.getUrl(uri);
-    var response = await request.close();
-    if (response.statusCode == HttpStatus.ok) {
-      var json = await response.transform(utf8.decoder).join();
-      List data = jsonDecode(json);
-      for (var item in data) {
-        keyList.add(Question.fromJson(item));
-      }
-    }
-
-    return keyList;
+    final data = await ApiClient.get(
+      Uri.parse(PHOTO_GALLERY_HOST).resolve(url),
+    );
+    if (data is! List) throw const FormatException('Expected gallery list');
+    return data.map((item) {
+      if (item is! Map<String, dynamic>)
+        throw const FormatException('Expected gallery object');
+      return Question.fromJson(item);
+    }).toList();
   }
 
   static Future<bool> downloadDetail(String url) async {
-    if (url.indexOf("http") == -1) {
+    final target = Uri.tryParse(url);
+    if (target == null ||
+        !['http', 'https'].contains(target.scheme) ||
+        target.host.isEmpty)
+      return false;
+    try {
+      final uri = Uri.parse(
+        PHOTO_GALLERY_DOWNLOAD_URL,
+      ).replace(queryParameters: {'detailUrl': url});
+      final response = await ApiClient.client
+          .get(uri)
+          .timeout(ApiClient.timeout);
+      return response.statusCode == 200;
+    } on Exception {
       return false;
     }
-
-    var uri = Uri.parse(PHOTO_GALLERY_DOWNLOAD_URL + url);
-    var request = await httpClient.getUrl(uri);
-    var response = await request.close();
-    if (response.statusCode == HttpStatus.ok) {
-      return true;
-    }
-
-    return false;
   }
 }

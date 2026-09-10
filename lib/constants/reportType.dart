@@ -30,7 +30,7 @@ const REPORT_TYPES = [
     "url": "/rps/fund_lite",
     "image": "https://s3.ax1x.com/2021/01/12/sYRCbq.png",
     "description":
-        "RPS指标衡量了某基金在过去一段时间，相对市场中其他基金的表现。市场内每只基金都被指定了0-100范围内的某一数值，100代表相对强度最高"
+        "RPS指标衡量了某基金在过去一段时间，相对市场中其他基金的表现。市场内每只基金都被指定了0-100范围内的某一数值，100代表相对强度最高",
   },
   {
     "id": 'stock-top',
@@ -42,7 +42,7 @@ const REPORT_TYPES = [
     "router": "StockReport",
     "url": "/grade/stock_lite",
     "image": "https://s3.ax1x.com/2021/01/12/sYREPU.png",
-    "description": "根据Hope2内的各种策略，算出股票的综合得分，得分高者为佳"
+    "description": "根据Hope2内的各种策略，算出股票的综合得分，得分高者为佳",
   },
   {
     "id": 'ddu',
@@ -54,7 +54,7 @@ const REPORT_TYPES = [
     "router": "DduReport",
     "url": "/ddu/fund",
     "image": "https://s3.ax1x.com/2021/01/12/sYR9rn.png",
-    "description": "DDU指标衡量了某基金在过去一段时间，相对自身过往的表现。"
+    "description": "DDU指标衡量了某基金在过去一段时间，相对自身过往的表现。",
   },
   {
     "id": 'demark20',
@@ -66,7 +66,7 @@ const REPORT_TYPES = [
     "router": "DeMarkReport",
     "url": "/demark/h20?days2Now=200",
     "image": "https://s3.ax1x.com/2021/01/12/sYRk5T.png",
-    "description": "精选A股最优秀的20只股票,采用DeMark策略进行预测和回溯，规避垃圾股，提高盈利概率"
+    "description": "精选A股最优秀的20只股票,采用DeMark策略进行预测和回溯，规避垃圾股，提高盈利概率",
   },
   {
     "id": 'demark150',
@@ -78,7 +78,7 @@ const REPORT_TYPES = [
     "router": "DeMarkReport",
     "url": "/demark/h150?days2Now=200",
     "image": "https://s3.ax1x.com/2021/01/12/sYRGGD.png",
-    "description": "精选A股最优秀的150只股票150组合，采用DeMark策略进行预测和回溯，规避垃圾股，提高盈利概率"
+    "description": "精选A股最优秀的150只股票150组合，采用DeMark策略进行预测和回溯，规避垃圾股，提高盈利概率",
   },
   {
     "id": 'demarkHK',
@@ -90,7 +90,7 @@ const REPORT_TYPES = [
     "router": "DeMarkReport",
     "url": "/demark/hk?days2Now=200",
     "image": "https://s3.ax1x.com/2021/01/12/sYR8PO.png",
-    "description": "港股采用DeMark策略进行预测和回溯，规避垃圾股，提高盈利概率"
+    "description": "港股采用DeMark策略进行预测和回溯，规避垃圾股，提高盈利概率",
   },
   {
     "id": 'demarkUS',
@@ -102,7 +102,7 @@ const REPORT_TYPES = [
     "router": "DeMarkReport",
     "url": "/demark/us?days2Now=200",
     "image": "https://s3.ax1x.com/2021/01/12/sYR1IK.png",
-    "description": "美股采用DeMark策略进行预测和回溯，规避垃圾股，提高盈利概率"
+    "description": "美股采用DeMark策略进行预测和回溯，规避垃圾股，提高盈利概率",
   },
   {
     "id": 'demarkETF',
@@ -114,7 +114,7 @@ const REPORT_TYPES = [
     "router": "DeMarkReport",
     "url": "/demark/etf?days2Now=200",
     "image": "https://s3.ax1x.com/2021/01/12/sYRla6.png",
-    "description": "ETF基金采用DeMark策略进行预测和回溯，规避垃圾股，提高盈利概率"
+    "description": "ETF基金采用DeMark策略进行预测和回溯，规避垃圾股，提高盈利概率",
   },
   {
     "id": 'demarkZQZS',
@@ -126,7 +126,7 @@ const REPORT_TYPES = [
     "router": "DeMarkReport",
     "url": "/demark/index?days2Now=200",
     "image": "https://s3.ax1x.com/2021/01/12/sYRQVx.png",
-    "description": "证券指数采用DeMark策略进行预测和回溯，规避垃圾股，提高盈利概率"
+    "description": "证券指数采用DeMark策略进行预测和回溯，规避垃圾股，提高盈利概率",
   },
   {
     "id": 'demarkDaily',
@@ -138,7 +138,7 @@ const REPORT_TYPES = [
     "router": "DeMarkReport",
     "url": "/analysis/Demark/daily",
     "image": "https://s3.ax1x.com/2021/01/12/sYRKq1.png",
-    "description": "全量采用DeMark策略进行预测和回溯，规避垃圾股，提高盈利概率"
+    "description": "全量采用DeMark策略进行预测和回溯，规避垃圾股，提高盈利概率",
   },
   {
     "id": 'suddentHighVolume',
@@ -150,7 +150,7 @@ const REPORT_TYPES = [
     "router": "ReportDetail",
     "url": "/analysis/SuddentHighVolume/daily",
     "image": "https://s3.ax1x.com/2021/01/12/sYRurR.png",
-    "description": "在20个工作日内，发生过3次成交量是前一天的2.5倍"
+    "description": "在20个工作日内，发生过3次成交量是前一天的2.5倍",
   },
   {
     "id": 'suddentHighVolumeLite',
@@ -162,7 +162,7 @@ const REPORT_TYPES = [
     "router": "ReportDetail",
     "url": "/analysis/SuddentHighVolumeLite/daily",
     "image": "https://s3.ax1x.com/2021/01/12/sYRnM9.png",
-    "description": "在2个工作日内，发生过1次成交量是前一天的2.4倍,换手大于1.2%,涨幅大于0"
+    "description": "在2个工作日内，发生过1次成交量是前一天的2.4倍,换手大于1.2%,涨幅大于0",
   },
   {
     "id": 'SuddentIncrease',
@@ -174,7 +174,7 @@ const REPORT_TYPES = [
     "router": "ReportDetail",
     "url": "/analysis/SuddentIncrease/daily",
     "image": "https://s3.ax1x.com/2021/01/12/sYRnM9.png",
-    "description": "10天之内有近似涨停，目前跌幅大于 -3.5%"
+    "description": "10天之内有近似涨停，目前跌幅大于 -3.5%",
   },
   {
     "id": 'suddentLowVolume',
@@ -186,7 +186,7 @@ const REPORT_TYPES = [
     "router": "ReportDetail",
     "url": "/analysis/SuddentLowVolume/daily",
     "image": "https://s3.ax1x.com/2021/01/12/sYRexJ.png",
-    "description": "5天之内某一天的跌幅超过-4.0，成交量小于前一天百分之50"
+    "description": "5天之内某一天的跌幅超过-4.0，成交量小于前一天百分之50",
   },
   {
     "id": 'yesterdayOnceMore',
@@ -198,7 +198,7 @@ const REPORT_TYPES = [
     "router": "ReportDetail",
     "url": "/analysis/YesterdayOnceMore/daily",
     "image": "https://s3.ax1x.com/2021/01/12/sYRZ24.png",
-    "description": "只考虑110天内的股票，曾经在20天内涨幅超过50.0%，现值比前期低点涨幅大于 -50.0%， 小于 30.0%"
+    "description": "只考虑110天内的股票，曾经在20天内涨幅超过50.0%，现值比前期低点涨幅大于 -50.0%， 小于 30.0%",
   },
   {
     "id": 'backTracking',
@@ -210,7 +210,7 @@ const REPORT_TYPES = [
     "router": "BackTracking",
     "url": "/backtracking/{code}?startDate=$START_DATE",
     "image": "https://s3.ax1x.com/2021/01/12/sYRk5T.png",
-    "description": "比较长期持有和高抛低吸的盈利差别"
+    "description": "比较长期持有和高抛低吸的盈利差别",
   },
   {
     "id": 'ipo',
@@ -222,7 +222,7 @@ const REPORT_TYPES = [
     "router": "ReportDetail",
     "url": "/analysis/IPO/daily",
     "image": "https://s3.ax1x.com/2021/01/12/sYRVGF.png",
-    "description": "上市10个月以内，当前价格低于最高价的1/2"
+    "description": "上市10个月以内，当前价格低于最高价的1/2",
   },
   {
     "id": 'macdDaily',
@@ -234,7 +234,7 @@ const REPORT_TYPES = [
     "router": "ReportDetail",
     "url": "/analysis/MACD/daily",
     "image": "https://s3.ax1x.com/2021/01/12/sYREPU.png",
-    "description": "MACD 介于0和0.1之间，且大于前一天的值，换手率大于2%"
+    "description": "MACD 介于0和0.1之间，且大于前一天的值，换手率大于2%",
   },
   {
     "id": 'macdAdvance',
@@ -246,7 +246,7 @@ const REPORT_TYPES = [
     "router": "ReportDetail",
     "url": "/analysis/MACDAdvance/daily",
     "image": "https://s3.ax1x.com/2021/01/12/sYRFaV.png",
-    "description": "30 天之内 MACD小于0过，目前MACD大于0，股价高于30天均线"
+    "description": "30 天之内 MACD小于0过，目前MACD大于0，股价高于30天均线",
   },
   {
     "id": 'macdWeekly',
@@ -258,7 +258,7 @@ const REPORT_TYPES = [
     "router": "ReportDetail",
     "url": "/analysis/MACD/weekly",
     "image": "https://s3.ax1x.com/2021/01/12/sYRiV0.png",
-    "description": "MACD 介于0和0.1之间，且大于前一天的值，换手率大于2%"
+    "description": "MACD 介于0和0.1之间，且大于前一天的值，换手率大于2%",
   },
   {
     "id": 'macdMonthly',
@@ -270,6 +270,6 @@ const REPORT_TYPES = [
     "router": "ReportDetail",
     "url": "/analysis/MACD/monthly",
     "image": "https://s3.ax1x.com/2021/01/12/sYRCbq.png",
-    "description": "MACD 介于0和0.1之间，且大于前一天的值，换手率大于2%"
+    "description": "MACD 介于0和0.1之间，且大于前一天的值，换手率大于2%",
   },
 ];

@@ -2,8 +2,6 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:foo/containers/PhotoGalleryList.dart';
 import 'package:grouped_list/grouped_list.dart';
-import 'package:jaguar/jaguar.dart';
-import 'package:jaguar_flutter_asset/jaguar_flutter_asset.dart';
 
 import '../styles/Themes.dart';
 import '../services/config.dart';
@@ -19,7 +17,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  List<Menu> _reportTypes;
+  late List<Menu> _reportTypes;
 
   final _biggerFont = const TextStyle(fontSize: 18.0);
   final _smallerFont = const TextStyle(fontSize: 14.0);
@@ -32,11 +30,11 @@ class _HomeState extends State<Home> {
     // fetchMenu();
 
     // start h5 app server
-    _startService();
   }
 
   fetchMenu() async {
     List<Menu> menu = await ConfigService.getMenu();
+    if (!mounted) return;
     setState(() {
       _reportTypes = menu;
     });
@@ -45,19 +43,13 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: new AppBar(
-        title: new Text('希望 2.0'),
-      ),
+      appBar: new AppBar(title: new Text('希望 2.0')),
       body: _reportType(context),
     );
   }
 
   Widget _reportType(BuildContext context) {
-    if (_reportTypes == null) {
-      return Container(child: Text('loading'));
-    }
-
-    return GroupedListView(
+    return GroupedListView<Menu, int>(
       // itemCount: _reportTypes.length * 2,
       padding: const EdgeInsets.all(16.0),
       // 对于每个建议的单词对都会调用一次itemBuilder，然后将单词对添加到ListTile行中
@@ -71,10 +63,7 @@ class _HomeState extends State<Home> {
       groupHeaderBuilder: (groupItem) => Container(
         alignment: Alignment.center,
         padding: EdgeInsets.all(WHITE_SPACE_M),
-        child: Text(
-          groupItem.groupName,
-          style: _biggerFont,
-        ),
+        child: Text(groupItem.groupName, style: _biggerFont),
       ),
       elements: _reportTypes,
     );
@@ -83,79 +72,115 @@ class _HomeState extends State<Home> {
   Widget _buildRow(Menu reportType, BuildContext context) {
     return InkWell(
       child: Card(
-          child: Column(children: [
-        ExtendedImage.network(
-          reportType.image ?? DEFAULT_REPORT_IMG,
-          fit: BoxFit.cover,
-          height: 200,
-          width: double.infinity,
-          cache: true,
+        child: Column(
+          children: [
+            ExtendedImage.network(
+              reportType.image.isEmpty ? DEFAULT_REPORT_IMG : reportType.image,
+              fit: BoxFit.cover,
+              height: 200,
+              width: double.infinity,
+              cache: true,
+            ),
+            Container(
+              padding: EdgeInsets.all(WHITE_SPACE_M),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(), // fill width
+                  Text(reportType.name, style: _biggerFont),
+                  Text(reportType.description, style: _smallerFont),
+                ],
+              ),
+            ),
+          ],
         ),
-        Container(
-            padding: EdgeInsets.all(WHITE_SPACE_M),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(), // fill width
-                Text(
-                  reportType.name,
-                  style: _biggerFont,
-                ),
-                Text(
-                  reportType.description ?? '',
-                  style: _smallerFont,
-                ),
-              ],
-            )),
-      ])),
+      ),
       onTap: () {
         router(reportType, context);
       },
     );
   }
 
-  _startService() async {
-    final server = Jaguar(address: "127.0.0.1", port: 8008);
-    server.addRoute(serveFlutterAssets());
-    await server.serve(logRequests: true);
-  }
-
   void router(Menu reportType, BuildContext context) {
     switch (reportType.router) {
       case "BackTracking":
-        Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return new BackTracking(reportType: reportType);
-        }));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) {
+              return new BackTracking(reportType: reportType);
+            },
+          ),
+        );
         break;
       case "ReportDetail":
-        Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return new ReportDetail(reportType: reportType);
-        }));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) {
+              return new ReportDetail(reportType: reportType);
+            },
+          ),
+        );
         break;
       case "DeMarkReport":
-        Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return new DeMarkReport(reportType: reportType);
-        }));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) {
+              return new DeMarkReport(reportType: reportType);
+            },
+          ),
+        );
         break;
       case "DduReport":
-        Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return new DduReport(reportType: reportType, dataType: DataType.ddu);
-        }));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) {
+              return new DduReport(
+                reportType: reportType,
+                dataType: DataType.ddu,
+              );
+            },
+          ),
+        );
         break;
       case "RpsReport":
-        Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return new DduReport(reportType: reportType, dataType: DataType.rps);
-        }));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) {
+              return new DduReport(
+                reportType: reportType,
+                dataType: DataType.rps,
+              );
+            },
+          ),
+        );
         break;
       case "StockReport":
-        Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return new DduReport(reportType: reportType, dataType: DataType.stock);
-        }));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) {
+              return new DduReport(
+                reportType: reportType,
+                dataType: DataType.stock,
+              );
+            },
+          ),
+        );
         break;
       case "PhotoGallery":
-        Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return new PhotoGalleryList(reportType: reportType);
-        }));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) {
+              return new PhotoGalleryList(reportType: reportType);
+            },
+          ),
+        );
         break;
       default:
     }
