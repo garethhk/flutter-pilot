@@ -24,6 +24,7 @@
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
+.fvm/
 .flutter-plugins
 .flutter-plugins-dependencies
 .packages
@@ -42,6 +43,9 @@ app.*.map.json
 
 # Exceptions to above rules.
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
-android/build.gradle
 
 ios/build
+*.dSYM.zip
+**/fastlane/report.xml
+*.jks
+*.keystore

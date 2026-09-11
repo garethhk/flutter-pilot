@@ -1,53 +1,48 @@
-import 'dart:io';
-import 'dart:convert';
-
-import '../constants/ReportType.dart';
+import '../constants/report_type.dart';
+import '../core/app_logger.dart';
 import '../models/menu.dart';
+import 'api_client.dart';
 
 class ConfigService {
-  static final HttpClient httpClient = new HttpClient();
+  ConfigService({required this.apiClient, required this.logger});
 
-  static List<Menu> getLocalMenu() {
-    List<Menu> menus = [];
-    REPORT_TYPES.forEach((e) => menus.add(Menu.fromJson(e)));
-    return menus;
-  }
+  final ApiClient apiClient;
+  final AppLogger logger;
 
-  static Future<List<Menu>> getMenu() async {
-    List<Menu> menus = [];
-    var uri = Uri.parse(MEMU_URL);
-    var request = await httpClient.getUrl(uri);
-    var response = await request.close();
-    // default
-    REPORT_TYPES.forEach((e) => menus.add(Menu.fromJson(e)));
+  List<Menu> getLocalMenu() => reportTypes
+      .map((item) => Menu.fromJson(Map<String, dynamic>.from(item)))
+      .toList();
 
-    if (response.statusCode == HttpStatus.ok) {
-      var json = await response.transform(utf8.decoder).join();
-      List data = jsonDecode(json);
-      // merge cloud config
-      data.forEach((e) {
-        var item = Menu.fromJson(e);
-        var localItem = menus.firstWhere((element) => element.id == item.id,
-            orElse: () => null);
-        // if cloud config version higher than local, replace the item
-        if (localItem != null &&
-            localItem.version != null &&
-            item.version != null &&
-            localItem.version < item.version) {
-          localItem.name = item.name;
-          localItem.router = item.router;
-          localItem.url = item.url;
-          localItem.html = item.html;
-          localItem.image = item.image;
-          localItem.description = item.description;
+  Future<List<Menu>> fetchMenu() async {
+    final menus = getLocalMenu();
+    try {
+      final data = await apiClient.get(Uri.parse(menuUrl));
+      if (data is! List) {
+        throw const FormatException('Expected menu list');
+      }
+      for (final json in data) {
+        if (json is! Map<String, dynamic>) {
+          throw const FormatException('Expected menu object');
         }
-
-        // add new item from cloud
-        if (item.id != null && localItem == null) {
+        final item = Menu.fromJson(json);
+        if (item.id.isEmpty) {
+          continue;
+        }
+        final index = menus.indexWhere((local) => local.id == item.id);
+        if (index == -1) {
           menus.add(item);
+        } else if (item.version > menus[index].version) {
+          menus[index] = item;
         }
-      });
+      }
+      return menus;
+    } on Object catch (error, stackTrace) {
+      logger.warning(
+        'Remote menu unavailable; using bundled menu',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return getLocalMenu();
     }
-    return menus;
   }
 }

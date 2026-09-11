@@ -2,32 +2,33 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'menu.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(checked: true)
 class Menu {
-  String id;
-  int version;
-  int order;
-  int group;
-  String groupName;
-  String name;
-  String router;
-  String url;
-  String html;
-  String image;
-  String description;
+  final String id;
+  final String groupName;
+  final String name;
+  final String router;
+  final String url;
+  final String html;
+  final String image;
+  final String description;
+  final int version;
+  final int order;
+  final int group;
 
-  Menu(
-      {this.name,
-      this.order,
-      this.group,
-      this.groupName,
-      this.router,
-      this.url,
-      this.html,
-      this.image,
-      this.description,
-      this.id,
-      this.version});
+  Menu({
+    this.id = '',
+    this.groupName = '',
+    this.name = '',
+    this.router = '',
+    this.url = '',
+    this.html = '',
+    this.image = '',
+    this.description = '',
+    this.version = 0,
+    this.order = 0,
+    this.group = 0,
+  });
 
   factory Menu.fromJson(Map<String, dynamic> json) => _$MenuFromJson(json);
   Map<String, dynamic> toJson() => _$MenuToJson(this);

@@ -1,34 +1,72 @@
+import 'dart:async';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
-import './containers/home.dart';
+import 'core/app_dependencies.dart';
+import 'features/home/home.dart';
 
 void main() {
-  runApp(MyApp());
+  final dependencies = AppDependencies();
+  runZonedGuarded(
+    () {
+      WidgetsFlutterBinding.ensureInitialized();
+      FlutterError.onError = (details) {
+        FlutterError.presentError(details);
+        dependencies.logger.error(
+          'Unhandled Flutter framework error',
+          error: details.exception,
+          stackTrace: details.stack,
+        );
+      };
+      PlatformDispatcher.instance.onError = (error, stackTrace) {
+        dependencies.logger.error(
+          'Unhandled platform error',
+          error: error,
+          stackTrace: stackTrace,
+        );
+        return true;
+      };
+      runApp(MyApp(dependencies: dependencies));
+    },
+    (error, stackTrace) => dependencies.logger.error(
+      'Unhandled asynchronous error',
+      error: error,
+      stackTrace: stackTrace,
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
+class MyApp extends StatefulWidget {
+  const MyApp({super.key, required this.dependencies});
+
+  final AppDependencies dependencies;
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void dispose() {
+    widget.dependencies.close();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Hope2',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.red,
-        // This makes the visual density adapt to the platform that you run
-        // the app on. For desktop platforms, the controls will be smaller and
-        // closer together (more dense) than on mobile platforms.
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
+        useMaterial3: true,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: Home(),
+      home: Home(
+        menuRepository: widget.dependencies.menuRepository,
+        router: widget.dependencies.router,
+      ),
     );
   }
 }

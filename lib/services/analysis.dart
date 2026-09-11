@@ -1,23 +1,17 @@
-import 'dart:io';
-import 'dart:convert';
-
-import '../constants/ReportType.dart';
+import '../constants/report_type.dart';
 import '../models/analysis.dart';
+import 'api_client.dart';
 
 class AnalysisService {
-  static final HttpClient httpClient = new HttpClient();
+  AnalysisService({required this.apiClient});
 
-  static Future<Analysis> getAnalysis(String url) async {
-    Analysis analysis;
-    var uri = Uri.parse(HOST + url);
-    var request = await httpClient.getUrl(uri);
-    var response = await request.close();
-    if (response.statusCode == HttpStatus.ok) {
-      var json = await response.transform(utf8.decoder).join();
-      Map data = jsonDecode(json);
-      analysis = Analysis.fromJson(data);
+  final ApiClient apiClient;
+
+  Future<Analysis> getAnalysis(String url) async {
+    final data = await apiClient.get(Uri.parse(host).resolve(url));
+    if (data is! Map<String, dynamic>) {
+      throw const FormatException('Expected report object');
     }
-
-    return analysis;
+    return Analysis.fromJson(data);
   }
 }

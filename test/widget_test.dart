@@ -1,30 +1,113 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility that Flutter provides. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:foo/main.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:flutter_pilot/features/reports/ddu_report.dart';
+import 'package:flutter_pilot/features/reports/demark_report.dart';
+import 'package:flutter_pilot/features/backtesting/backtracking.dart';
+import 'package:flutter_pilot/models/menu.dart';
+import 'package:flutter_pilot/services/api_client.dart';
+import 'package:flutter_pilot/services/analysis.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(MyApp());
+  late http.Client client;
+  setUp(() => client = http.Client());
+  tearDown(() => client.close());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  testWidgets(
+    'RPS report handles missing optional fields and displays scores',
+    (tester) async {
+      client = MockClient(
+        (_) async => http.Response(
+          jsonEncode({
+            'items': [
+              {'name': 'Test fund', 'code': '000001', 'rps10': 92},
+            ],
+          }),
+          200,
+        ),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          home: DduReport(
+            reportType: Menu(name: 'RPS', url: '/rps'),
+            dataType: DataType.rps,
+            analysisService: AnalysisService(
+              apiClient: ApiClient(client: client),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('RPS10: 92'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  testWidgets('Report can retry after a network failure', (tester) async {
+    var calls = 0;
+    client = MockClient(
+      (_) async => ++calls == 1
+          ? http.Response('offline', 503)
+          : http.Response('{"resultList": []}', 200),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: DeMarkReport(
+          reportType: Menu(name: 'DeMark', url: '/demark'),
+          analysisService: AnalysisService(
+            apiClient: ApiClient(client: client),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('数据加载失败，请检查网络后重试'), findsOneWidget);
+    await tester.tap(find.text('重试'));
+    await tester.pumpAndSettle();
+    expect(find.text('暂无数据'), findsOneWidget);
+    expect(calls, 2);
+  });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  testWidgets('Backtest chart builds and substitutes the date query', (
+    tester,
+  ) async {
+    Uri? requested;
+    client = MockClient((request) async {
+      requested = request.url;
+      return http.Response(
+        '{"category":["2026-01-01","2026-01-02"],"r1":[1,2.5],"r2":[2,3]}',
+        200,
+      );
+    });
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BackTracking(
+          reportType: Menu(
+            name: 'Backtest',
+            url: '/backtracking/{code}?startDate=START_DATE',
+          ),
+          apiClient: ApiClient(client: client),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(requested!.path, '/backtracking/000001');
+    expect(
+      requested!.queryParameters['startDate'],
+      matches(r'^\d{4}-\d{2}-\d{2}$'),
+    );
+    expect(requested!.queryParameters.containsKey('unUsed'), isFalse);
+    expect(tester.takeException(), isNull);
+
+    client.close();
+    client = MockClient((_) async => http.Response('{"code":100}', 200));
+    await tester.enterText(find.byType(TextField), 'invalid-symbol');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('平安银行 | 000001'), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 }
