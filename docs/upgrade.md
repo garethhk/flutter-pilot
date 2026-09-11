@@ -20,8 +20,8 @@ commands so the project pin is used even when the global SDK is older.
 
 Run Flutter commands sequentially. Commit generated model files and
 `pubspec.lock` when changing models or dependencies. The Dart package remains
-`flutter_pilot`; Android application ID remains `cn.frank.flutter.pilot` and iOS
-bundle ID remains `com.qianyitian.hope2`. The release version is `1.1.1+1` and
+`flutter_pilot`; Android application ID remains `com.oneexcelsior.flutterpilot` and iOS
+bundle ID remains `com.oneexcelsior.flutterpilot`. The release version is `1.1.1+1` and
 both platforms now read their build name and number from `pubspec.yaml`.
 
 ## Migration scope

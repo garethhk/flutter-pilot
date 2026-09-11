@@ -9,7 +9,7 @@ if (keystorePropertiesFile.exists()) {
     keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
 }
 android {
-    namespace "cn.frank.flutter.pilot"
+    namespace "com.oneexcelsior.flutterpilot"
     compileSdk flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
     compileOptions {
@@ -17,7 +17,7 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
     defaultConfig {
-        applicationId "cn.frank.flutter.pilot"
+        applicationId "com.oneexcelsior.flutterpilot"
         minSdk flutter.minSdkVersion
         targetSdk flutter.targetSdkVersion
         versionCode flutter.versionCode

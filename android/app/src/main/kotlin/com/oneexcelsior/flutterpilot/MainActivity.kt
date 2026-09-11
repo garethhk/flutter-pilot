@@ -1,4 +1,4 @@
-package cn.frank.flutter.pilot
+package com.oneexcelsior.flutterpilot
 
 import io.flutter.embedding.android.FlutterActivity
 

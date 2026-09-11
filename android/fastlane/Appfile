@@ -1,2 +1,2 @@
 json_key_file(ENV["GOOGLE_PLAY_JSON_KEY_FILE"]) if ENV["GOOGLE_PLAY_JSON_KEY_FILE"]
-package_name("cn.frank.flutter.pilot")
+package_name("com.oneexcelsior.flutterpilot")
