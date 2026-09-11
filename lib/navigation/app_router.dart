@@ -8,6 +8,7 @@ import '../features/reports/report_detail.dart';
 import '../models/menu.dart';
 import '../services/analysis.dart';
 import '../services/photoGallery.dart';
+import '../services/api_client.dart';
 
 /// Centralizes report navigation so screens do not own business route mapping.
 class AppRouter {
@@ -18,11 +19,13 @@ class AppRouter {
     Menu menu, {
     AnalysisService? analysisService,
     PhotoGalleryService? photoGalleryService,
+    ApiClient? apiClient,
   }) async {
     final service = analysisService ?? AnalysisService();
     final galleryService = photoGalleryService ?? PhotoGalleryService();
+    final client = apiClient ?? ApiClient();
     final page = switch (menu.router) {
-      'BackTracking' => BackTracking(reportType: menu),
+      'BackTracking' => BackTracking(reportType: menu, apiClient: client),
       'ReportDetail' => ReportDetail(
         reportType: menu,
         analysisService: service,

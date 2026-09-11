@@ -40,6 +40,7 @@ class MyApp extends StatelessWidget {
         menuRepository: dependencies.menuRepository,
         analysisService: dependencies.analysisService,
         photoGalleryService: dependencies.photoGalleryService,
+        apiClient: dependencies.apiClient,
       ),
     );
   }

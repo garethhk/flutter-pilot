@@ -87,6 +87,7 @@ void main() {
             name: 'Backtest',
             url: '/backtracking/{code}?startDate=START_DATE',
           ),
+          apiClient: ApiClient(client: LegacyApiClient.client),
         ),
       ),
     );

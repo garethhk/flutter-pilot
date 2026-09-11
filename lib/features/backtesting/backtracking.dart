@@ -11,7 +11,10 @@ import 'package:intl/intl.dart';
 
 class BackTracking extends StatefulWidget {
   final Menu reportType;
-  BackTracking({required this.reportType});
+  BackTracking({required this.reportType, ApiClient? apiClient})
+    : apiClient = apiClient ?? ApiClient();
+
+  final ApiClient apiClient;
 
   @override
   _BackTrackingState createState() =>
@@ -172,7 +175,7 @@ class _BackTrackingState extends State<BackTracking> {
       ),
     );
     try {
-      final data = await LegacyApiClient.get(uri);
+      final data = await widget.apiClient.get(uri);
       if (!mounted || searchId != _searchId) return;
       if (data is! Map || data['code'] == 100 || data['symbols'] is! List)
         throw const FormatException('Invalid stock search');
@@ -209,7 +212,7 @@ class _BackTrackingState extends State<BackTracking> {
           .replaceFirst(START_DATE, startDate),
     );
     try {
-      final data = await LegacyApiClient.get(uri);
+      final data = await widget.apiClient.get(uri);
       if (!mounted || requestId != _requestId) return;
       if (data is! Map<String, dynamic> || data['code'] == 100)
         throw const FormatException('Invalid backtest');
