@@ -2,6 +2,9 @@
 
 已升级至 Flutter 3.47.3 / Dart 3.13.3 stable。安装、构建、测试和平台限制见 [升级说明](docs/upgrade.md)。
 
+架构分层、依赖注入、AsyncState、feature boundaries 和测试规则见
+[架构说明](docs/architecture.md)。
+
 下面保留原项目文章，历史 SDK、发布链接和部署说明不代表当前验证状态。
 
 ---
