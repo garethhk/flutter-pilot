@@ -7,11 +7,13 @@ abstract interface class MenuRepository {
 }
 
 final class ConfigMenuRepository implements MenuRepository {
-  const ConfigMenuRepository();
+  const ConfigMenuRepository({required this.configService});
+
+  final ConfigService configService;
 
   @override
-  List<Menu> get localMenu => ConfigService().getLocalMenu();
+  List<Menu> get localMenu => configService.getLocalMenu();
 
   @override
-  Future<List<Menu>> fetchMenu() => ConfigService().fetchMenu();
+  Future<List<Menu>> fetchMenu() => configService.fetchMenu();
 }

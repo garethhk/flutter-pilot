@@ -1,32 +1,20 @@
+import 'dart:async';
+
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:grouped_list/grouped_list.dart';
 
-import '../styles/Themes.dart';
-import '../core/async_state.dart';
-import '../services/menu_repository.dart';
-import '../services/analysis.dart';
-import '../services/photoGallery.dart';
-import '../services/api_client.dart';
-import '../models/menu.dart';
-import '../navigation/app_router.dart';
+import '../../core/async_state.dart';
+import '../../models/menu.dart';
+import '../../navigation/app_router.dart';
+import '../../services/menu_repository.dart';
+import '../../styles/themes.dart';
 
 class Home extends StatefulWidget {
-  Home({
-    super.key,
-    MenuRepository? menuRepository,
-    AnalysisService? analysisService,
-    PhotoGalleryService? photoGalleryService,
-    ApiClient? apiClient,
-  }) : menuRepository = menuRepository ?? const ConfigMenuRepository(),
-       analysisService = analysisService ?? AnalysisService(),
-       photoGalleryService = photoGalleryService ?? PhotoGalleryService(),
-       apiClient = apiClient ?? ApiClient();
+  const Home({super.key, required this.menuRepository, required this.router});
 
   final MenuRepository menuRepository;
-  final AnalysisService analysisService;
-  final PhotoGalleryService photoGalleryService;
-  final ApiClient apiClient;
+  final AppRouter router;
 
   @override
   State<Home> createState() => _HomeState();
@@ -42,7 +30,7 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     _menuState = AsyncData(widget.menuRepository.localMenu);
-    _refreshMenu();
+    unawaited(_refreshMenu());
   }
 
   Future<void> _refreshMenu() async {
@@ -116,7 +104,7 @@ class _HomeState extends State<Home> {
       groupBy: (element) => element.group,
       groupHeaderBuilder: (groupItem) => Container(
         alignment: Alignment.center,
-        padding: EdgeInsets.all(WHITE_SPACE_M),
+        padding: EdgeInsets.all(whiteSpaceMedium),
         child: Text(groupItem.groupName, style: _biggerFont),
       ),
       elements: reportTypes,
@@ -137,7 +125,7 @@ class _HomeState extends State<Home> {
                 label: '${reportType.name} 預覽圖片',
                 child: ExtendedImage.network(
                   reportType.image.isEmpty
-                      ? DEFAULT_REPORT_IMG
+                      ? defaultReportImage
                       : reportType.image,
                   fit: BoxFit.cover,
                   height: 200,
@@ -154,7 +142,7 @@ class _HomeState extends State<Home> {
                 ),
               ),
               Container(
-                padding: EdgeInsets.all(WHITE_SPACE_M),
+                padding: EdgeInsets.all(whiteSpaceMedium),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -167,14 +155,8 @@ class _HomeState extends State<Home> {
             ],
           ),
         ),
-        onTap: () {
-          AppRouter.openReport(
-            context,
-            reportType,
-            analysisService: widget.analysisService,
-            photoGalleryService: widget.photoGalleryService,
-            apiClient: widget.apiClient,
-          );
+        onTap: () async {
+          await widget.router.openReport(context, reportType);
         },
       ),
     );

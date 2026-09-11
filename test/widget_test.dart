@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:foo/features/reports/ddu_report.dart';
-import 'package:foo/features/reports/demark_report.dart';
-import 'package:foo/features/backtesting/backtracking.dart';
-import 'package:foo/models/menu.dart';
-import 'package:foo/services/api_client.dart';
-import 'package:foo/services/analysis.dart';
+import 'package:flutter_pilot/features/reports/ddu_report.dart';
+import 'package:flutter_pilot/features/reports/demark_report.dart';
+import 'package:flutter_pilot/features/backtesting/backtracking.dart';
+import 'package:flutter_pilot/models/menu.dart';
+import 'package:flutter_pilot/services/api_client.dart';
+import 'package:flutter_pilot/services/analysis.dart';
 
 void main() {
   late http.Client client;

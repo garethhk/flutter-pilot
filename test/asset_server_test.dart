@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:foo/services/asset_server.dart';
+import 'package:flutter_pilot/services/asset_server.dart';
 
 class _LoopbackHttpOverrides extends HttpOverrides {}
 

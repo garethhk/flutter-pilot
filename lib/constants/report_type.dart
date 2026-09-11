@@ -1,24 +1,21 @@
-const STOCK_NUM = "STOCK_NUM";
-const START_DATE = "START_DATE";
+const stockNumberPlaceholder = 'STOCK_NUM';
+const startDatePlaceholder = 'START_DATE';
 
-const HOST = "https://www.qianyitian.com";
-const PHOTO_GALLERY_HOST = "https://photo-gallery.frankwang.cn";
-const PHOTO_GALLERY_DOWNLOAD_URL =
-    "https://zhihu-spider.frankwang.cn/spider/start?detailUrl=";
-// const DEMARK_CHART_URL = "$HOST/demark-flag.html?code=$STOCK_NUM";
-const DEMARK_CHART_URL =
-    "http://127.0.0.1:8008/h5/deMarkDetail/Hope2.html?code=$STOCK_NUM";
-// const DEMARK_FUND_CHART_URL =
-// "http://127.0.0.1:8008/h5/deMarkDetail/Hope2Fund.html?code=$STOCK_NUM";
-const DEMARK_FUND_CHART_URL =
-    "https://www.qianyitian.com/demark-fund-flag.html?code=$STOCK_NUM";
-const DEMARK_STOCK_MARK_CHART_URL =
-    "https://www.qianyitian.com/demark-flag.html?code=$STOCK_NUM";
-const SEARCH_STOCK_URL =
-    "https://www.qianyitian.com:8002/search?word=$STOCK_NUM";
-const MEMU_URL = "$HOST/menu.json";
+const host = 'https://www.qianyitian.com';
+const photoGalleryHost = 'https://photo-gallery.frankwang.cn';
+const photoGalleryDownloadUrl =
+    'https://zhihu-spider.frankwang.cn/spider/start?detailUrl=';
+const deMarkChartUrl =
+    'http://127.0.0.1:8008/h5/deMarkDetail/Hope2.html?code=$stockNumberPlaceholder';
+const deMarkFundChartUrl =
+    'https://www.qianyitian.com/demark-fund-flag.html?code=$stockNumberPlaceholder';
+const deMarkStockMarkChartUrl =
+    'https://www.qianyitian.com/demark-flag.html?code=$stockNumberPlaceholder';
+const searchStockUrl =
+    'https://www.qianyitian.com:8002/search?word=$stockNumberPlaceholder';
+const menuUrl = '$host/menu.json';
 
-const REPORT_TYPES = [
+const reportTypes = [
   {
     "id": 'RPS',
     "order": 10,
@@ -208,7 +205,7 @@ const REPORT_TYPES = [
     "version": 1,
     "name": "昨日重现（算法收益回溯）",
     "router": "BackTracking",
-    "url": "/backtracking/{code}?startDate=$START_DATE",
+    "url": "/backtracking/{code}?startDate=$startDatePlaceholder",
     "image": "https://s3.ax1x.com/2021/01/12/sYRk5T.png",
     "description": "比较长期持有和高抛低吸的盈利差别",
   },

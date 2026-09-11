@@ -1,9 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 
-import '../../styles/Themes.dart';
+import '../../styles/themes.dart';
 import '../../models/analysis.dart';
 import '../../models/menu.dart';
 import '../../services/analysis.dart';
@@ -12,52 +14,50 @@ import '../../core/async_state.dart';
 class ReportDetail extends StatefulWidget {
   final Menu reportType;
 
-  ReportDetail({required this.reportType, AnalysisService? analysisService})
-    : analysisService = analysisService ?? AnalysisService();
+  const ReportDetail({
+    super.key,
+    required this.reportType,
+    required this.analysisService,
+  });
 
   final AnalysisService analysisService;
 
   @override
-  _ReportDetailState createState() =>
-      _ReportDetailState(reportType: reportType);
+  State<ReportDetail> createState() => _ReportDetailState();
 }
 
 class _ReportDetailState extends State<ReportDetail> {
-  final Menu reportType;
-
   List<Map<String, dynamic>> _detailData = [];
   String _detailDes = "";
   String _detailTime = "";
-  DateFormat _formatter = DateFormat('yyyy年MM月dd日');
+  final DateFormat _formatter = DateFormat('yyyy年MM月dd日');
 
   // ui control
   bool _showDes = false;
-  AsyncState<Analysis?> _state = const AsyncLoading();
-
-  _ReportDetailState({required this.reportType});
+  AsyncState<Analysis> _state = const AsyncLoading();
 
   @override
   void initState() {
     super.initState();
-    fetchData();
+    unawaited(fetchData());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(reportType.name)),
+      appBar: AppBar(title: Text(widget.reportType.name)),
       //   body: _reportDetail(context),
       // );
       body: Column(
         children: [
-          Container(height: WHITE_SPACE_L),
+          const SizedBox(height: whiteSpaceLarge),
           Expanded(child: _reportDetail(context)),
-          Divider(),
+          const Divider(),
           Card(
-            margin: EdgeInsets.all(WHITE_SPACE_S),
+            margin: EdgeInsets.all(whiteSpaceSmall),
             clipBehavior: Clip.antiAlias,
             child: Container(
-              padding: EdgeInsets.all(WHITE_SPACE_M),
+              padding: EdgeInsets.all(whiteSpaceMedium),
               child: Column(
                 children: [
                   IconButton(
@@ -71,7 +71,7 @@ class _ReportDetailState extends State<ReportDetail> {
                     },
                   ),
                   _showDes ? Text(_detailDes) : Container(),
-                  Text('更新时间: ' + _detailTime),
+                  Text('更新时间: $_detailTime'),
                 ],
               ),
             ),
@@ -82,10 +82,10 @@ class _ReportDetailState extends State<ReportDetail> {
   }
 
   Widget _reportDetail(BuildContext context) {
-    if (_state is AsyncLoading<Analysis?>) {
+    if (_state is AsyncLoading<Analysis>) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (_state is AsyncError<Analysis?>)
+    if (_state is AsyncError<Analysis>) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -95,7 +95,10 @@ class _ReportDetailState extends State<ReportDetail> {
           ],
         ),
       );
-    if (_detailData.isEmpty) return const Center(child: Text('暂无数据'));
+    }
+    if (_detailData.isEmpty) {
+      return const Center(child: Text('暂无数据'));
+    }
     return ListView.builder(
       itemCount: _detailData.length,
       itemBuilder: (context, i) {
@@ -104,15 +107,15 @@ class _ReportDetailState extends State<ReportDetail> {
     );
   }
 
-  Widget _buildRow(item, BuildContext context) {
-    String code = item["code"] as String;
-    String name = item["name"] as String;
-    List<dynamic> detail = List.of(item["data"] as List);
-    List<Widget> line = [];
+  Widget _buildRow(Map<String, dynamic> item, BuildContext context) {
+    final code = item["code"] as String;
+    final name = item["name"] as String;
+    final detail = List<dynamic>.of(item["data"] as List);
+    final line = <Widget>[];
 
-    line.add(Container(child: SectionTitle(title: "$name [${code.trim()}]")));
-    line.add(Divider());
-    detail.forEach((element) {
+    line.add(SectionTitle(title: "$name [${code.trim()}]"));
+    line.add(const Divider());
+    for (final element in detail) {
       line.add(
         Row(
           children: [
@@ -141,28 +144,26 @@ class _ReportDetailState extends State<ReportDetail> {
           ],
         ),
       );
-      line.add(Row(children: [Container(height: WHITE_SPACE_S)]));
-    });
+      line.add(const SizedBox(height: whiteSpaceSmall));
+    }
 
     line.add(
       OverflowBar(
         children: [
           ElevatedButton(
-            child: Text("复制股票代码"),
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: item['code']));
+            child: const Text("复制股票代码"),
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: item['code']));
             },
           ),
         ],
       ),
     );
 
-    return Container(
-      child: Card(
-        child: Container(
-          padding: EdgeInsets.all(WHITE_SPACE_M),
-          child: Column(children: line),
-        ),
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(whiteSpaceMedium),
+        child: Column(children: line),
       ),
     );
   }
@@ -171,27 +172,20 @@ class _ReportDetailState extends State<ReportDetail> {
     setState(
       () => _state = AsyncLoading(
         previous: _state is AsyncData
-            ? (_state as AsyncData<Analysis?>).value
+            ? (_state as AsyncData<Analysis>).value
             : null,
       ),
     );
-    Analysis? data = await widget.analysisService.getAnalysis(reportType.url);
-    if (!mounted) return;
-    if (data == null) {
-      setState(
-        () => _state = AsyncError(
-          StateError('Unable to load report'),
-          previous: null,
-        ),
+    try {
+      final data = await widget.analysisService.getAnalysis(
+        widget.reportType.url,
       );
-    } else {
-      setState(() => _state = AsyncData(data));
-    }
-    if (data != null) {
+      if (!mounted) return;
       setState(() {
+        _state = AsyncData(data);
         _detailData.clear();
-        data.resultList.forEach((element) {
-          var flag = element["data"] is Map
+        for (final element in data.resultList) {
+          final flag = element["data"] is Map
               ? (element["data"]["flag"] as List? ?? [])
               : [];
           _detailData.add({
@@ -201,13 +195,13 @@ class _ReportDetailState extends State<ReportDetail> {
             "url": (element["url"] ?? "").toString(),
             "data": flag,
           });
-        });
+        }
 
         _detailData.sort((left, right) {
           if (left['data'] is List &&
               right['data'] is List &&
-              (right['data'] as List).length > 0 &&
-              (left['data'] as List).length > 0) {
+              (right['data'] as List).isNotEmpty &&
+              (left['data'] as List).isNotEmpty) {
             return (right['data'] as List).last["countdown"].compareTo(
               (left['data'] as List).last["countdown"],
             );
@@ -218,18 +212,20 @@ class _ReportDetailState extends State<ReportDetail> {
         _detailDes = data.description;
         _detailTime = data.generateTime;
       });
-    } else {
+    } on Object catch (error, stackTrace) {
+      if (!mounted) return;
       setState(() {
+        _state = AsyncError(error, stackTrace: stackTrace);
         _detailData = [];
-        _detailDes = "Error";
-        _detailTime = "Error";
+        _detailDes = 'Error';
+        _detailTime = 'Error';
       });
     }
   }
 }
 
 class SectionTitle extends StatelessWidget {
-  const SectionTitle({Key? key, required this.title}) : super(key: key);
+  const SectionTitle({super.key, required this.title});
 
   final String title;
 

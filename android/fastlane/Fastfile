@@ -28,7 +28,11 @@ platform :android do
     
     # sh "your_script.sh"
     # You can also use other beta testing services here
-    pgyer(api_key: "$PGYER_APP_KEY", user_key: "$PGYER_USER_KEY",apk:"../build/app/outputs/apk/release/app-release.apk")
+    pgyer(
+      api_key: ENV.fetch("PGYER_APP_KEY"),
+      user_key: ENV.fetch("PGYER_USER_KEY"),
+      apk: "../build/app/outputs/apk/release/app-release.apk"
+    )
 
   end
 

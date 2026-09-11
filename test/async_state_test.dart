@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:foo/core/async_state.dart';
+import 'package:flutter_pilot/core/async_state.dart';
 
 void main() {
   test('AsyncState preserves data while refreshing', () {

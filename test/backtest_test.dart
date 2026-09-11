@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:foo/models/backtest.dart';
+import 'package:flutter_pilot/models/backtest.dart';
 
 void main() {
   test('Backtest accepts integer and fractional returns', () {

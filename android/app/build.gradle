@@ -9,7 +9,7 @@ if (keystorePropertiesFile.exists()) {
     keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
 }
 android {
-    namespace "com.example.foo"
+    namespace "cn.frank.flutter.pilot"
     compileSdk flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
     compileOptions {

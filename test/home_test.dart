@@ -2,12 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:foo/core/app_dependencies.dart';
-import 'package:foo/main.dart';
-import 'package:foo/models/menu.dart';
-import 'package:foo/services/menu_repository.dart';
-import 'package:foo/services/analysis.dart';
-import 'package:foo/services/api_client.dart';
+import 'package:flutter_pilot/core/app_dependencies.dart';
+import 'package:flutter_pilot/main.dart';
+import 'package:flutter_pilot/models/menu.dart';
+import 'package:flutter_pilot/services/menu_repository.dart';
+import 'package:flutter_pilot/services/api_client.dart';
 
 class _FakeMenuRepository implements MenuRepository {
   _FakeMenuRepository({List<Menu>? menu})
@@ -71,9 +70,7 @@ void main() {
       MyApp(
         dependencies: AppDependencies(
           menuRepository: repository,
-          analysisService: AnalysisService(
-            apiClient: ApiClient(client: client),
-          ),
+          apiClient: ApiClient(client: client),
         ),
       ),
     );
@@ -129,9 +126,7 @@ void main() {
               ),
             ],
           ),
-          analysisService: AnalysisService(
-            apiClient: ApiClient(client: client),
-          ),
+          apiClient: ApiClient(client: client),
         ),
       ),
     );

@@ -1,9 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../constants/reportType.dart';
+import '../../constants/report_type.dart';
 import '../../presentation/web_page.dart';
-import '../../styles/Themes.dart';
+import '../../styles/themes.dart';
 import '../../models/analysis.dart';
 import '../../models/menu.dart';
 import '../../services/analysis.dart';
@@ -15,54 +17,49 @@ class DduReport extends StatefulWidget {
   final Menu reportType;
   final DataType dataType;
 
-  DduReport({
+  const DduReport({
+    super.key,
     required this.reportType,
     required this.dataType,
-    AnalysisService? analysisService,
-  }) : analysisService = analysisService ?? AnalysisService();
+    required this.analysisService,
+  });
 
   final AnalysisService analysisService;
 
   @override
-  _DduReportState createState() =>
-      _DduReportState(reportType: reportType, dataType: dataType);
+  State<DduReport> createState() => _DduReportState();
 }
 
 class _DduReportState extends State<DduReport> {
-  final Menu reportType;
-  final DataType dataType;
-
   List<Map<String, dynamic>> _detailData = [];
   String _detailDes = "";
   String _detailTime = "";
 
   // ui control
   bool _showDes = false;
-  AsyncState<Analysis?> _state = const AsyncLoading();
-
-  _DduReportState({required this.reportType, required this.dataType});
+  AsyncState<Analysis> _state = const AsyncLoading();
 
   @override
   void initState() {
     super.initState();
-    fetchData();
+    unawaited(fetchData());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(reportType.name)),
+      appBar: AppBar(title: Text(widget.reportType.name)),
       // );
       body: Column(
         children: [
-          Container(height: WHITE_SPACE_L),
-          Expanded(child: _DduReport(context)),
-          Divider(),
+          const SizedBox(height: whiteSpaceLarge),
+          Expanded(child: _dduReport(context)),
+          const Divider(),
           Card(
-            margin: EdgeInsets.all(WHITE_SPACE_S),
+            margin: EdgeInsets.all(whiteSpaceSmall),
             clipBehavior: Clip.antiAlias,
             child: Container(
-              padding: EdgeInsets.all(WHITE_SPACE_M),
+              padding: EdgeInsets.all(whiteSpaceMedium),
               child: Column(
                 children: [
                   IconButton(
@@ -76,7 +73,7 @@ class _DduReportState extends State<DduReport> {
                     },
                   ),
                   _showDes ? Text(_detailDes) : Container(),
-                  Text('更新时间: ' + _detailTime),
+                  Text('更新时间: $_detailTime'),
                 ],
               ),
             ),
@@ -86,11 +83,11 @@ class _DduReportState extends State<DduReport> {
     );
   }
 
-  Widget _DduReport(BuildContext context) {
-    if (_state is AsyncLoading<Analysis?>) {
+  Widget _dduReport(BuildContext context) {
+    if (_state is AsyncLoading<Analysis>) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (_state is AsyncError<Analysis?>)
+    if (_state is AsyncError<Analysis>) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -100,7 +97,10 @@ class _DduReportState extends State<DduReport> {
           ],
         ),
       );
-    if (_detailData.isEmpty) return const Center(child: Text('暂无数据'));
+    }
+    if (_detailData.isEmpty) {
+      return const Center(child: Text('暂无数据'));
+    }
     return ListView.builder(
       itemCount: _detailData.length,
       itemBuilder: (context, i) {
@@ -109,15 +109,15 @@ class _DduReportState extends State<DduReport> {
     );
   }
 
-  Widget _buildRow(item, BuildContext context) {
-    String code = item["code"] as String;
-    String name = item["name"] as String;
+  Widget _buildRow(Map<String, dynamic> item, BuildContext context) {
+    final code = item["code"] as String;
+    final name = item["name"] as String;
     List<dynamic> detail;
-    List<Widget> line = [];
+    final line = <Widget>[];
 
-    line.add(Container(child: SectionTitle(title: "$name [${code.trim()}]")));
-    line.add(Divider());
-    if (this.dataType == DataType.stock) {
+    line.add(SectionTitle(title: "$name [${code.trim()}]"));
+    line.add(const Divider());
+    if (widget.dataType == DataType.stock) {
       line.add(
         Row(
           children: [
@@ -129,7 +129,7 @@ class _DduReportState extends State<DduReport> {
           ],
         ),
       );
-    } else if (this.dataType == DataType.ddu) {
+    } else if (widget.dataType == DataType.ddu) {
       detail = (item["dduData"] as List);
       line.add(
         Row(
@@ -186,7 +186,7 @@ class _DduReportState extends State<DduReport> {
           ],
         ),
       );
-      line.add(Row(children: [Container(height: WHITE_SPACE_S)]));
+      line.add(Row(children: [Container(height: whiteSpaceSmall)]));
     } else {
       detail = (item["rpsData"] as List);
       line.add(
@@ -255,27 +255,27 @@ class _DduReportState extends State<DduReport> {
           ],
         ),
       );
-      line.add(Row(children: [Container(height: WHITE_SPACE_S)]));
+      line.add(Row(children: [Container(height: whiteSpaceSmall)]));
     }
 
     line.add(
       OverflowBar(
         children: [
           ElevatedButton(
-            child: Text("DeMark 回溯"),
-            onPressed: () {
-              Navigator.push(
+            child: const Text("DeMark 回溯"),
+            onPressed: () async {
+              await Navigator.push<void>(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<void>(
                   builder: (context) {
                     return WebPage(
                       title: "DeMark 回溯",
                       url:
-                          (dataType == DataType.stock
-                                  ? DEMARK_STOCK_MARK_CHART_URL
-                                  : DEMARK_FUND_CHART_URL)
+                          (widget.dataType == DataType.stock
+                                  ? deMarkStockMarkChartUrl
+                                  : deMarkFundChartUrl)
                               .replaceFirst(
-                                STOCK_NUM,
+                                stockNumberPlaceholder,
                                 Uri.encodeQueryComponent(code),
                               ),
                     );
@@ -285,21 +285,19 @@ class _DduReportState extends State<DduReport> {
             },
           ),
           ElevatedButton(
-            child: Text("复制基金代码"),
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: item['code']));
+            child: const Text("复制基金代码"),
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: item['code']));
             },
           ),
         ],
       ),
     );
 
-    return Container(
-      child: Card(
-        child: Container(
-          padding: EdgeInsets.all(WHITE_SPACE_M),
-          child: Column(children: line),
-        ),
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(whiteSpaceMedium),
+        child: Column(children: line),
       ),
     );
   }
@@ -307,22 +305,20 @@ class _DduReportState extends State<DduReport> {
   Future<void> fetchData() async {
     setState(
       () => _state = AsyncLoading(
-        previous: _state is AsyncData<Analysis?>
-            ? (_state as AsyncData<Analysis?>).value
+        previous: _state is AsyncData<Analysis>
+            ? (_state as AsyncData<Analysis>).value
             : null,
       ),
     );
-    Analysis? data = await widget.analysisService.getAnalysis(reportType.url);
-    if (!mounted) return;
-    setState(
-      () => _state = data == null
-          ? AsyncError(StateError('Unable to load report'))
-          : AsyncData(data),
-    );
-    if (data != null) {
+    try {
+      final data = await widget.analysisService.getAnalysis(
+        widget.reportType.url,
+      );
+      if (!mounted) return;
       setState(() {
+        _state = AsyncData(data);
         _detailData.clear();
-        data.items.forEach((element) {
+        for (final element in data.items) {
           _detailData.add({
             "msg": (element["msg"] ?? "").toString(),
             "name": element["name"] as String,
@@ -344,23 +340,25 @@ class _DduReportState extends State<DduReport> {
               element["rps250"],
             ],
           });
-        });
+        }
 
         _detailDes = data.description;
         _detailTime = data.generateTime;
       });
-    } else {
+    } on Object catch (error, stackTrace) {
+      if (!mounted) return;
       setState(() {
+        _state = AsyncError(error, stackTrace: stackTrace);
         _detailData = [];
-        _detailDes = "Error";
-        _detailTime = "Error";
+        _detailDes = 'Error';
+        _detailTime = 'Error';
       });
     }
   }
 }
 
 class SectionTitle extends StatelessWidget {
-  const SectionTitle({Key? key, required this.title}) : super(key: key);
+  const SectionTitle({super.key, required this.title});
 
   final String title;
 

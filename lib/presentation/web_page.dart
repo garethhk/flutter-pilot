@@ -37,49 +37,55 @@ class _WebPageState extends State<WebPage> {
     });
     try {
       var uri = Uri.parse(widget.url);
-      if (widget.localChart) uri = await _assets.start(uri.query);
+      if (widget.localChart) {
+        uri = await _assets.start(uri.query);
+      }
       if (!mounted) {
         await _assets.close();
         return;
       }
-      final controller = WebViewController()
-        ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        ..setNavigationDelegate(
-          NavigationDelegate(
-            onNavigationRequest: (request) {
-              final scheme = Uri.tryParse(request.url)?.scheme;
-              return scheme == 'http' || scheme == 'https'
-                  ? NavigationDecision.navigate
-                  : NavigationDecision.prevent;
-            },
-            onPageStarted: (_) {
-              if (mounted)
-                setState(() {
-                  _loading = true;
-                  _error = null;
-                });
-            },
-            onPageFinished: (_) {
-              if (mounted) setState(() => _loading = false);
-            },
-            onWebResourceError: (error) {
-              if (mounted && error.isForMainFrame == true) {
-                setState(() {
-                  _loading = false;
-                  _error = '页面加载失败，请重试';
-                });
-              }
-            },
-          ),
-        );
+      final controller = WebViewController();
+      await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+      await controller.setNavigationDelegate(
+        NavigationDelegate(
+          onNavigationRequest: (request) {
+            final scheme = Uri.tryParse(request.url)?.scheme;
+            return scheme == 'http' || scheme == 'https'
+                ? NavigationDecision.navigate
+                : NavigationDecision.prevent;
+          },
+          onPageStarted: (_) {
+            if (mounted) {
+              setState(() {
+                _loading = true;
+                _error = null;
+              });
+            }
+          },
+          onPageFinished: (_) {
+            if (mounted) {
+              setState(() => _loading = false);
+            }
+          },
+          onWebResourceError: (error) {
+            if (mounted && error.isForMainFrame == true) {
+              setState(() {
+                _loading = false;
+                _error = '页面加载失败，请重试';
+              });
+            }
+          },
+        ),
+      );
       setState(() => _controller = controller);
       await controller.loadRequest(uri);
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _loading = false;
           _error = '无法打开页面';
         });
+      }
     }
   }
 
@@ -113,7 +119,9 @@ class _WebPageState extends State<WebPage> {
                             await _controller!.reload();
                           } else {
                             await _assets.close();
-                            if (mounted) await _load();
+                            if (mounted) {
+                              await _load();
+                            }
                           }
                         },
                         child: const Text('重试'),
@@ -135,8 +143,9 @@ class _WebPageState extends State<WebPage> {
             icon: const Icon(Icons.arrow_back),
             onPressed: () async {
               final controller = _controller;
-              if (controller != null && await controller.canGoBack())
+              if (controller != null && await controller.canGoBack()) {
                 await controller.goBack();
+              }
             },
           ),
           IconButton(
@@ -144,8 +153,9 @@ class _WebPageState extends State<WebPage> {
             icon: const Icon(Icons.arrow_forward),
             onPressed: () async {
               final controller = _controller;
-              if (controller != null && await controller.canGoForward())
+              if (controller != null && await controller.canGoForward()) {
                 await controller.goForward();
+              }
             },
           ),
           IconButton(

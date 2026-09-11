@@ -4,10 +4,10 @@ part 'analysis.g.dart';
 
 @JsonSerializable(checked: true)
 class Analysis {
-  String description;
-  String generateTime;
-  List<Map<String, dynamic>> resultList;
-  List<Map<String, dynamic>> items;
+  final String description;
+  final String generateTime;
+  final List<Map<String, dynamic>> resultList;
+  final List<Map<String, dynamic>> items;
 
   Analysis({
     this.description = '',

@@ -1,18 +1,20 @@
+import 'dart:async';
+
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/menu.dart';
 import '../../models/question.dart';
-import '../../services/photoGallery.dart';
+import '../../services/photo_gallery.dart';
 import '../../presentation/web_page.dart';
 
 class PhotoGalleryList extends StatefulWidget {
-  PhotoGalleryList({
+  const PhotoGalleryList({
     super.key,
     required this.reportType,
-    PhotoGalleryService? photoGalleryService,
-  }) : photoGalleryService = photoGalleryService ?? PhotoGalleryService();
+    required this.photoGalleryService,
+  });
   final Menu reportType;
   final PhotoGalleryService photoGalleryService;
   @override
@@ -31,7 +33,7 @@ class _PhotoGalleryListState extends State<PhotoGalleryList> {
   @override
   void initState() {
     super.initState();
-    _fetch();
+    unawaited(_fetch());
   }
 
   @override
@@ -69,11 +71,12 @@ class _PhotoGalleryListState extends State<PhotoGalleryList> {
         }
       }
     } on Exception {
-      if (mounted && generation == _generation)
+      if (mounted && generation == _generation) {
         setState(() {
           _loading = false;
           _failed = true;
         });
+      }
     }
   }
 
@@ -82,9 +85,10 @@ class _PhotoGalleryListState extends State<PhotoGalleryList> {
     caseSensitive: false,
   ).hasMatch(Uri.tryParse(url)?.path ?? '');
   void _message(String message) {
-    if (mounted)
+    if (mounted) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(message)));
+    }
   }
 
   Future<void> _download() async {
@@ -185,18 +189,20 @@ class _PhotoGalleryListState extends State<PhotoGalleryList> {
                                 spacing: 8,
                                 children: [
                                   ElevatedButton(
-                                    onPressed: () {
+                                    onPressed: () async {
                                       if (_isImage(link)) {
-                                        _openImage(link);
+                                        await _openImage(link);
                                       } else {
-                                        Navigator.push(
+                                        await Navigator.push<void>(
                                           context,
-                                          MaterialPageRoute(
+                                          MaterialPageRoute<void>(
                                             builder: (_) => PhotoGalleryList(
                                               reportType: Menu(
                                                 url: link,
                                                 name: title,
                                               ),
+                                              photoGalleryService:
+                                                  widget.photoGalleryService,
                                             ),
                                           ),
                                         );
@@ -206,15 +212,16 @@ class _PhotoGalleryListState extends State<PhotoGalleryList> {
                                   ),
                                   if (item.zhihuLink.isNotEmpty)
                                     ElevatedButton(
-                                      onPressed: () => Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => WebPage(
-                                            title: '知乎',
-                                            url: item.zhihuLink,
+                                      onPressed: () async =>
+                                          Navigator.push<void>(
+                                            context,
+                                            MaterialPageRoute<void>(
+                                              builder: (_) => WebPage(
+                                                title: '知乎',
+                                                url: item.zhihuLink,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      ),
                                       child: const Text('打开知乎'),
                                     ),
                                 ],

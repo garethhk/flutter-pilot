@@ -20,8 +20,9 @@ commands so the project pin is used even when the global SDK is older.
 
 Run Flutter commands sequentially. Commit generated model files and
 `pubspec.lock` when changing models or dependencies. The Dart package remains
-`foo` to preserve existing imports; Android application ID remains
-`cn.frank.flutter.pilot` and iOS bundle ID remains `com.qianyitian.hope2`.
+`flutter_pilot`; Android application ID remains `cn.frank.flutter.pilot` and iOS
+bundle ID remains `com.qianyitian.hope2`. The release version is `1.1.1+1` and
+both platforms now read their build name and number from `pubspec.yaml`.
 
 ## Migration scope
 
@@ -34,6 +35,10 @@ Run Flutter commands sequentially. Commit generated model files and
   port, serves only the bundled chart directory, and closes with the page.
 - Bounded HTTP requests, offline menu fallback, report failure/retry/empty states,
   URL query encoding, checked backtest payloads and stale-response protection.
+- One application-owned `ApiClient` is shared by menu, analysis, gallery,
+  backtesting and navigation, then closed with the root widget. Unhandled errors
+  pass through a platform-neutral logger boundary that can later be connected to
+  a crash-reporting provider.
 - Gallery previews load outside `build`; controllers are disposed. The old
   image download button called an unimplemented function that always returned
   false. It now explicitly opens the original image in an external app;
@@ -67,10 +72,17 @@ and [Gradle plugin DSL migration](https://docs.flutter.dev/release/breaking-chan
 The app still depends on the original external stock and gallery services.
 Bundled chart HTML is local; its market data is not. Automated tests use fixtures
 and do not certify live market data, historical strategy accuracy or backend
-availability. Existing HTTP service compatibility settings remain in place.
+availability.
 
 External gallery and stock-search endpoints now use HTTPS. The bundled chart
 server remains HTTP on loopback only because it serves local WebView assets.
+Android Network Security Config and iOS ATS limit cleartext access to local
+networking instead of allowing arbitrary HTTP traffic.
+
+CI runs quality checks once per change, builds Android on Linux and builds iOS
+without signing on macOS. Pull-request branches no longer run duplicate push and
+pull-request workflows. Fastlane uses the production Android application ID and
+reads deployment credentials from environment variables.
 
 On macOS, run `flutter pub get`, then `cd ios && pod install`, and commit the
 regenerated `Podfile.lock` after verification. Run
@@ -84,10 +96,12 @@ separately. No store upload is part of this migration.
 ## Validation on 2026-09-11 (Flutter 3.47.3)
 
 - `flutter analyze`: passed with no issues.
-- `flutter test`: all 11 tests passed, including an actual loopback asset request.
+- `flutter test`: all 19 tests passed, including dependency ownership, complete
+  navigation recovery and an actual loopback asset request.
 - `flutter build apk --debug`: passed; debug APK generated locally.
 - `flutter analyze --suggestions`: Java, Gradle, Kotlin plugin and Android
   Gradle plugin versions reported compatible.
 - Live menu and RPS HTTPS probes failed TLS connection establishment on this
   machine; this is not evidence that the remote services are universally down.
-- No Android device was connected. iOS/Xcode validation remains a macOS step.
+- The refreshed debug APK installed and launched on an Android 10 emulator.
+  iOS/Xcode validation also runs in GitHub Actions on macOS.
