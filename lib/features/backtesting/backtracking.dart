@@ -1,5 +1,6 @@
 import '../../models/backtest.dart';
 import '../../services/api_client.dart';
+import '../../core/async_state.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -30,8 +31,7 @@ class _BackTrackingState extends State<BackTracking> {
   final DateTime _nowDate = DateTime.now();
   int _requestId = 0;
   int _searchId = 0;
-  bool _loading = true;
-  bool _failed = false;
+  late AsyncState<List<charts.Series<LinearSales, DateTime>>> _state;
   late List<charts.Series<LinearSales, DateTime>> _seriesList;
 
   DateTime _time = DateTime.now();
@@ -39,6 +39,7 @@ class _BackTrackingState extends State<BackTracking> {
 
   _BackTrackingState({required this.reportType}) {
     _seriesList = _createLineData({"category": [], "r1": [], "r2": []});
+    _state = AsyncLoading(previous: _seriesList);
   }
 
   @override
@@ -120,8 +121,9 @@ class _BackTrackingState extends State<BackTracking> {
   }
 
   Widget _reportDetail(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
-    if (_failed)
+    if (_state is AsyncLoading<List<charts.Series<LinearSales, DateTime>>>)
+      return const Center(child: CircularProgressIndicator());
+    if (_state is AsyncError<List<charts.Series<LinearSales, DateTime>>>)
       return Center(
         child: TextButton(onPressed: fetchData, child: const Text('加载失败，点击重试')),
       );
@@ -198,10 +200,7 @@ class _BackTrackingState extends State<BackTracking> {
 
   Future<void> fetchData() async {
     final requestId = ++_requestId;
-    setState(() {
-      _loading = true;
-      _failed = false;
-    });
+    setState(() => _state = AsyncLoading(previous: _seriesList));
     final startDate = DateFormat('yyyy-MM-dd')
         .format(_nowDate.subtract(Duration(days: _backDays)));
     final uri = Uri.parse(HOST).resolve(
@@ -217,13 +216,15 @@ class _BackTrackingState extends State<BackTracking> {
       final series = _createLineData(data);
       setState(() {
         _seriesList = series;
-        _loading = false;
+        _state = AsyncData(series);
       });
     } on Exception {
       if (!mounted || requestId != _requestId) return;
       setState(() {
-        _loading = false;
-        _failed = true;
+        _state = AsyncError(
+          StateError('Unable to load backtest'),
+          previous: _seriesList,
+        );
       });
     }
   }

@@ -7,6 +7,7 @@ import '../../styles/Themes.dart';
 import '../../models/analysis.dart';
 import '../../models/menu.dart';
 import '../../services/analysis.dart';
+import '../../core/async_state.dart';
 
 class ReportDetail extends StatefulWidget {
   final Menu reportType;
@@ -31,8 +32,7 @@ class _ReportDetailState extends State<ReportDetail> {
 
   // ui control
   bool _showDes = false;
-  bool _loading = true;
-  bool _failed = false;
+  AsyncState<Analysis?> _state = const AsyncLoading();
 
   _ReportDetailState({required this.reportType});
 
@@ -82,8 +82,10 @@ class _ReportDetailState extends State<ReportDetail> {
   }
 
   Widget _reportDetail(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
-    if (_failed)
+    if (_state is AsyncLoading<Analysis?>) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_state is AsyncError<Analysis?>)
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -166,16 +168,25 @@ class _ReportDetailState extends State<ReportDetail> {
   }
 
   Future<void> fetchData() async {
-    setState(() {
-      _loading = true;
-      _failed = false;
-    });
+    setState(
+      () => _state = AsyncLoading(
+        previous: _state is AsyncData
+            ? (_state as AsyncData<Analysis?>).value
+            : null,
+      ),
+    );
     Analysis? data = await widget.analysisService.getAnalysis(reportType.url);
     if (!mounted) return;
-    setState(() {
-      _loading = false;
-      _failed = data == null;
-    });
+    if (data == null) {
+      setState(
+        () => _state = AsyncError(
+          StateError('Unable to load report'),
+          previous: null,
+        ),
+      );
+    } else {
+      setState(() => _state = AsyncData(data));
+    }
     if (data != null) {
       setState(() {
         _detailData.clear();

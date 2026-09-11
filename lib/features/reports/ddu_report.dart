@@ -7,6 +7,7 @@ import '../../styles/Themes.dart';
 import '../../models/analysis.dart';
 import '../../models/menu.dart';
 import '../../services/analysis.dart';
+import '../../core/async_state.dart';
 
 enum DataType { ddu, rps, stock }
 
@@ -37,8 +38,7 @@ class _DduReportState extends State<DduReport> {
 
   // ui control
   bool _showDes = false;
-  bool _loading = true;
-  bool _failed = false;
+  AsyncState<Analysis?> _state = const AsyncLoading();
 
   _DduReportState({required this.reportType, required this.dataType});
 
@@ -87,8 +87,10 @@ class _DduReportState extends State<DduReport> {
   }
 
   Widget _DduReport(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
-    if (_failed)
+    if (_state is AsyncLoading<Analysis?>) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_state is AsyncError<Analysis?>)
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -303,16 +305,20 @@ class _DduReportState extends State<DduReport> {
   }
 
   Future<void> fetchData() async {
-    setState(() {
-      _loading = true;
-      _failed = false;
-    });
+    setState(
+      () => _state = AsyncLoading(
+        previous: _state is AsyncData<Analysis?>
+            ? (_state as AsyncData<Analysis?>).value
+            : null,
+      ),
+    );
     Analysis? data = await widget.analysisService.getAnalysis(reportType.url);
     if (!mounted) return;
-    setState(() {
-      _loading = false;
-      _failed = data == null;
-    });
+    setState(
+      () => _state = data == null
+          ? AsyncError(StateError('Unable to load report'))
+          : AsyncData(data),
+    );
     if (data != null) {
       setState(() {
         _detailData.clear();
