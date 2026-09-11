@@ -1,15 +1,11 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
-import 'package:foo/containers/PhotoGalleryList.dart';
 import 'package:grouped_list/grouped_list.dart';
 
 import '../styles/Themes.dart';
 import '../services/config.dart';
 import '../models/menu.dart';
-import './ReportDetail.dart';
-import './BackTracking.dart';
-import './DeMarkReport.dart';
-import './DduReport.dart';
+import '../navigation/app_router.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -116,93 +112,8 @@ class _HomeState extends State<Home> {
         ),
       ),
       onTap: () {
-        router(reportType, context);
+        AppRouter.openReport(context, reportType);
       },
     );
-  }
-
-  void router(Menu reportType, BuildContext context) {
-    switch (reportType.router) {
-      case "BackTracking":
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) {
-              return new BackTracking(reportType: reportType);
-            },
-          ),
-        );
-        break;
-      case "ReportDetail":
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) {
-              return new ReportDetail(reportType: reportType);
-            },
-          ),
-        );
-        break;
-      case "DeMarkReport":
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) {
-              return new DeMarkReport(reportType: reportType);
-            },
-          ),
-        );
-        break;
-      case "DduReport":
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) {
-              return new DduReport(
-                reportType: reportType,
-                dataType: DataType.ddu,
-              );
-            },
-          ),
-        );
-        break;
-      case "RpsReport":
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) {
-              return new DduReport(
-                reportType: reportType,
-                dataType: DataType.rps,
-              );
-            },
-          ),
-        );
-        break;
-      case "StockReport":
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) {
-              return new DduReport(
-                reportType: reportType,
-                dataType: DataType.stock,
-              );
-            },
-          ),
-        );
-        break;
-      case "PhotoGallery":
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) {
-              return new PhotoGalleryList(reportType: reportType);
-            },
-          ),
-        );
-        break;
-      default:
-    }
   }
 }
