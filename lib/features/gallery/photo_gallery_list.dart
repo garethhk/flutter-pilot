@@ -2,10 +2,10 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../models/menu.dart';
-import '../models/question.dart';
-import '../services/photoGallery.dart';
-import '../presentation/web_page.dart';
+import '../../models/menu.dart';
+import '../../models/question.dart';
+import '../../services/photoGallery.dart';
+import '../../presentation/web_page.dart';
 
 class PhotoGalleryList extends StatefulWidget {
   const PhotoGalleryList({super.key, required this.reportType});

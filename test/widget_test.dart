@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:foo/containers/DduReport.dart';
-import 'package:foo/containers/DeMarkReport.dart';
-import 'package:foo/containers/BackTracking.dart';
+import 'package:foo/features/reports/ddu_report.dart';
+import 'package:foo/features/reports/demark_report.dart';
+import 'package:foo/features/backtesting/backtracking.dart';
 import 'package:foo/models/menu.dart';
 import 'package:foo/services/api_client.dart';
 

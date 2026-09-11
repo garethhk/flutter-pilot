@@ -1,5 +1,5 @@
-export '../../containers/BackTracking.dart';
-export '../../containers/DeMarkReport.dart' hide SectionTitle;
-export '../../containers/DduReport.dart' hide SectionTitle;
-export '../../containers/PhotoGalleryList.dart';
-export '../../containers/ReportDetail.dart' hide SectionTitle;
+export '../backtesting/backtracking.dart';
+export 'demark_report.dart' hide SectionTitle;
+export 'ddu_report.dart' hide SectionTitle;
+export '../gallery/photo_gallery_list.dart';
+export 'report_detail.dart' hide SectionTitle;

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../containers/BackTracking.dart';
-import '../containers/DeMarkReport.dart';
-import '../containers/DduReport.dart';
-import '../containers/PhotoGalleryList.dart';
-import '../containers/ReportDetail.dart';
+import '../features/backtesting/backtracking.dart';
+import '../features/reports/demark_report.dart';
+import '../features/reports/ddu_report.dart';
+import '../features/gallery/photo_gallery_list.dart';
+import '../features/reports/report_detail.dart';
 import '../models/menu.dart';
 
 /// Centralizes report navigation so screens do not own business route mapping.

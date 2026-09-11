@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../constants/reportType.dart';
-import '../presentation/web_page.dart';
-import '../styles/Themes.dart';
-import '../models/analysis.dart';
-import '../models/menu.dart';
-import '../services/analysis.dart';
+import '../../constants/reportType.dart';
+import '../../presentation/web_page.dart';
+import '../../styles/Themes.dart';
+import '../../models/analysis.dart';
+import '../../models/menu.dart';
+import '../../services/analysis.dart';
 
 enum DataType { ddu, rps, stock }
 

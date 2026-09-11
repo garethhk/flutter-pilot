@@ -1,24 +1,25 @@
-import 'package:flutter/services.dart';
-
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-import '../styles/Themes.dart';
-import '../models/analysis.dart';
-import '../models/menu.dart';
-import '../services/analysis.dart';
+import '../../constants/reportType.dart';
+import '../../presentation/web_page.dart';
+import '../../styles/Themes.dart';
+import '../../models/analysis.dart';
+import '../../models/menu.dart';
+import '../../services/analysis.dart';
 
-class ReportDetail extends StatefulWidget {
+class DeMarkReport extends StatefulWidget {
   final Menu reportType;
 
-  ReportDetail({required this.reportType});
+  DeMarkReport({required this.reportType});
 
   @override
-  _ReportDetailState createState() =>
-      _ReportDetailState(reportType: reportType);
+  _DeMarkReportState createState() =>
+      _DeMarkReportState(reportType: reportType);
 }
 
-class _ReportDetailState extends State<ReportDetail> {
+class _DeMarkReportState extends State<DeMarkReport> {
   final Menu reportType;
 
   List<Map<String, dynamic>> _detailData = [];
@@ -31,7 +32,7 @@ class _ReportDetailState extends State<ReportDetail> {
   bool _loading = true;
   bool _failed = false;
 
-  _ReportDetailState({required this.reportType});
+  _DeMarkReportState({required this.reportType});
 
   @override
   void initState() {
@@ -43,12 +44,11 @@ class _ReportDetailState extends State<ReportDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(reportType.name)),
-      //   body: _reportDetail(context),
       // );
       body: Column(
         children: [
           Container(height: WHITE_SPACE_L),
-          Expanded(child: _reportDetail(context)),
+          Expanded(child: _DeMarkReport(context)),
           Divider(),
           Card(
             margin: EdgeInsets.all(WHITE_SPACE_S),
@@ -78,7 +78,7 @@ class _ReportDetailState extends State<ReportDetail> {
     );
   }
 
-  Widget _reportDetail(BuildContext context) {
+  Widget _DeMarkReport(BuildContext context) {
     if (_loading) return const Center(child: CircularProgressIndicator());
     if (_failed)
       return Center(
@@ -107,6 +107,9 @@ class _ReportDetailState extends State<ReportDetail> {
 
     line.add(Container(child: SectionTitle(title: "$name [${code.trim()}]")));
     line.add(Divider());
+    if (detail.length > 2) {
+      detail.removeRange(0, detail.length - 2);
+    }
     detail.forEach((element) {
       line.add(
         Row(
@@ -142,6 +145,26 @@ class _ReportDetailState extends State<ReportDetail> {
     line.add(
       OverflowBar(
         children: [
+          ElevatedButton(
+            child: Text("DeMark 回溯"),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) {
+                    return WebPage(
+                      title: "DeMark 回溯",
+                      url: DEMARK_CHART_URL.replaceFirst(
+                        STOCK_NUM,
+                        Uri.encodeQueryComponent(code),
+                      ),
+                      localChart: true,
+                    );
+                  },
+                ),
+              );
+            },
+          ),
           ElevatedButton(
             child: Text("复制股票代码"),
             onPressed: () {
@@ -180,13 +203,16 @@ class _ReportDetailState extends State<ReportDetail> {
           var flag = element["data"] is Map
               ? (element["data"]["flag"] as List? ?? [])
               : [];
-          _detailData.add({
-            "msg": (element["msg"] ?? "").toString(),
-            "name": element["name"] as String,
-            "code": element["code"] as String,
-            "url": (element["url"] ?? "").toString(),
-            "data": flag,
-          });
+          // 去掉后端没有 flag 的垃圾数据
+          if (flag.length > 0) {
+            _detailData.add({
+              "msg": (element["msg"] ?? "").toString(),
+              "name": element["name"] as String,
+              "code": element["code"] as String,
+              "url": (element["url"] ?? "").toString(),
+              "data": flag,
+            });
+          }
         });
 
         _detailData.sort((left, right) {
