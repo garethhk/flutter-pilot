@@ -4,17 +4,17 @@ part 'menu.g.dart';
 
 @JsonSerializable(checked: true)
 class Menu {
-  String id;
-  String groupName;
-  String name;
-  String router;
-  String url;
-  String html;
-  String image;
-  String description;
-  int version;
-  int order;
-  int group;
+  final String id;
+  final String groupName;
+  final String name;
+  final String router;
+  final String url;
+  final String html;
+  final String image;
+  final String description;
+  final int version;
+  final int order;
+  final int group;
 
   Menu({
     this.id = '',
