@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 
-import './containers/home.dart';
+import './core/app_dependencies.dart';
+import './features/home/home.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, this.dependencies = const AppDependencies()});
+
+  final AppDependencies dependencies;
 
   // This widget is the root of your application.
   @override
@@ -32,7 +35,7 @@ class MyApp extends StatelessWidget {
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const Home(),
+      home: Home(menuRepository: dependencies.menuRepository),
     );
   }
 }

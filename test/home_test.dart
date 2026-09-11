@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter/material.dart';
-import 'package:foo/containers/home.dart';
+import 'package:foo/core/app_dependencies.dart';
+import 'package:foo/main.dart';
 import 'package:foo/models/menu.dart';
 import 'package:foo/services/menu_repository.dart';
 
@@ -24,19 +24,15 @@ void main() {
   testWidgets('Home renders menu supplied by an injected repository', (
     tester,
   ) async {
-    await tester.pumpWidget(const _TestApp());
+    await tester.pumpWidget(
+      MyApp(
+        dependencies: AppDependencies(menuRepository: _FakeMenuRepository()),
+      ),
+    );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.text('Injected report'), findsOneWidget);
     expect(find.text('Injected'), findsOneWidget);
   });
-}
-
-class _TestApp extends StatelessWidget {
-  const _TestApp();
-
-  @override
-  Widget build(context) =>
-      MaterialApp(home: Home(menuRepository: _FakeMenuRepository()));
 }
