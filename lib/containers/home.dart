@@ -6,6 +6,7 @@ import '../styles/Themes.dart';
 import '../core/async_state.dart';
 import '../services/menu_repository.dart';
 import '../services/analysis.dart';
+import '../services/photoGallery.dart';
 import '../models/menu.dart';
 import '../navigation/app_router.dart';
 
@@ -14,11 +15,14 @@ class Home extends StatefulWidget {
     super.key,
     MenuRepository? menuRepository,
     AnalysisService? analysisService,
+    PhotoGalleryService? photoGalleryService,
   }) : menuRepository = menuRepository ?? const ConfigMenuRepository(),
-       analysisService = analysisService ?? AnalysisService();
+       analysisService = analysisService ?? AnalysisService(),
+       photoGalleryService = photoGalleryService ?? PhotoGalleryService();
 
   final MenuRepository menuRepository;
   final AnalysisService analysisService;
+  final PhotoGalleryService photoGalleryService;
 
   @override
   State<Home> createState() => _HomeState();
@@ -146,6 +150,7 @@ class _HomeState extends State<Home> {
           context,
           reportType,
           analysisService: widget.analysisService,
+          photoGalleryService: widget.photoGalleryService,
         );
       },
     );

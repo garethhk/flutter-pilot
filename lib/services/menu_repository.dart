@@ -13,5 +13,5 @@ final class ConfigMenuRepository implements MenuRepository {
   List<Menu> get localMenu => ConfigService.getLocalMenu();
 
   @override
-  Future<List<Menu>> fetchMenu() => ConfigService.getMenu();
+  Future<List<Menu>> fetchMenu() => ConfigService().fetchMenu();
 }

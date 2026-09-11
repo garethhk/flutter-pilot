@@ -7,6 +7,7 @@ import '../features/gallery/photo_gallery_list.dart';
 import '../features/reports/report_detail.dart';
 import '../models/menu.dart';
 import '../services/analysis.dart';
+import '../services/photoGallery.dart';
 
 /// Centralizes report navigation so screens do not own business route mapping.
 class AppRouter {
@@ -16,8 +17,10 @@ class AppRouter {
     BuildContext context,
     Menu menu, {
     AnalysisService? analysisService,
+    PhotoGalleryService? photoGalleryService,
   }) async {
     final service = analysisService ?? AnalysisService();
+    final galleryService = photoGalleryService ?? PhotoGalleryService();
     final page = switch (menu.router) {
       'BackTracking' => BackTracking(reportType: menu),
       'ReportDetail' => ReportDetail(
@@ -43,7 +46,10 @@ class AppRouter {
         dataType: DataType.stock,
         analysisService: service,
       ),
-      'PhotoGallery' => PhotoGalleryList(reportType: menu),
+      'PhotoGallery' => PhotoGalleryList(
+        reportType: menu,
+        photoGalleryService: galleryService,
+      ),
       _ => null,
     };
     if (page == null || !context.mounted) return;

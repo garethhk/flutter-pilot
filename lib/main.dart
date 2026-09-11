@@ -39,6 +39,7 @@ class MyApp extends StatelessWidget {
       home: Home(
         menuRepository: dependencies.menuRepository,
         analysisService: dependencies.analysisService,
+        photoGalleryService: dependencies.photoGalleryService,
       ),
     );
   }

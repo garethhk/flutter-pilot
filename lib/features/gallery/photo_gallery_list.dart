@@ -8,8 +8,13 @@ import '../../services/photoGallery.dart';
 import '../../presentation/web_page.dart';
 
 class PhotoGalleryList extends StatefulWidget {
-  const PhotoGalleryList({super.key, required this.reportType});
+  PhotoGalleryList({
+    super.key,
+    required this.reportType,
+    PhotoGalleryService? photoGalleryService,
+  }) : photoGalleryService = photoGalleryService ?? PhotoGalleryService();
   final Menu reportType;
+  final PhotoGalleryService photoGalleryService;
   @override
   State<PhotoGalleryList> createState() => _PhotoGalleryListState();
 }
@@ -42,7 +47,9 @@ class _PhotoGalleryListState extends State<PhotoGalleryList> {
       _failed = false;
     });
     try {
-      final items = await PhotoGalleryService.getList(widget.reportType.url);
+      final items = await widget.photoGalleryService.getList(
+        widget.reportType.url,
+      );
       if (!mounted || generation != _generation) return;
       setState(() {
         _items = items;
@@ -54,7 +61,7 @@ class _PhotoGalleryListState extends State<PhotoGalleryList> {
         (item) => item.zhihuLink.contains('answer') && !_isImage(item.link),
       )) {
         try {
-          final preview = await PhotoGalleryService.getList(item.link);
+          final preview = await widget.photoGalleryService.getList(item.link);
           if (!mounted || generation != _generation) return;
           setState(() => _previews[item.link] = preview);
         } on Exception {
@@ -82,7 +89,7 @@ class _PhotoGalleryListState extends State<PhotoGalleryList> {
 
   Future<void> _download() async {
     setState(() => _downloading = true);
-    final result = await PhotoGalleryService.downloadDetail(
+    final result = await widget.photoGalleryService.downloadDetail(
       _textController.text.trim(),
     );
     if (!mounted) return;

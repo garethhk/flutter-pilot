@@ -79,9 +79,9 @@ void main() {
       expect(request.url.queryParameters.keys, ['detailUrl']);
       return http.Response('', 200);
     });
-    expect(await PhotoGalleryService.downloadDetail(url), isTrue);
+    expect(await LegacyPhotoGalleryService.downloadDetail(url), isTrue);
     expect(
-      await PhotoGalleryService.downloadDetail('file:///private'),
+      await LegacyPhotoGalleryService.downloadDetail('file:///private'),
       isFalse,
     );
   });
