@@ -2,9 +2,9 @@ const STOCK_NUM = "STOCK_NUM";
 const START_DATE = "START_DATE";
 
 const HOST = "https://www.qianyitian.com";
-const PHOTO_GALLERY_HOST = "http://photo-gallery.frankwang.cn";
+const PHOTO_GALLERY_HOST = "https://photo-gallery.frankwang.cn";
 const PHOTO_GALLERY_DOWNLOAD_URL =
-    "http://zhihu-spider.frankwang.cn/spider/start?detailUrl=";
+    "https://zhihu-spider.frankwang.cn/spider/start?detailUrl=";
 // const DEMARK_CHART_URL = "$HOST/demark-flag.html?code=$STOCK_NUM";
 const DEMARK_CHART_URL =
     "http://127.0.0.1:8008/h5/deMarkDetail/Hope2.html?code=$STOCK_NUM";
@@ -15,7 +15,7 @@ const DEMARK_FUND_CHART_URL =
 const DEMARK_STOCK_MARK_CHART_URL =
     "https://www.qianyitian.com/demark-flag.html?code=$STOCK_NUM";
 const SEARCH_STOCK_URL =
-    "http://www.qianyitian.com:8002/search?word=$STOCK_NUM";
+    "https://www.qianyitian.com:8002/search?word=$STOCK_NUM";
 const MEMU_URL = "$HOST/menu.json";
 
 const REPORT_TYPES = [

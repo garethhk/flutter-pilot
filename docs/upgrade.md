@@ -69,6 +69,9 @@ Bundled chart HTML is local; its market data is not. Automated tests use fixture
 and do not certify live market data, historical strategy accuracy or backend
 availability. Existing HTTP service compatibility settings remain in place.
 
+External gallery and stock-search endpoints now use HTTPS. The bundled chart
+server remains HTTP on loopback only because it serves local WebView assets.
+
 On macOS, run `flutter pub get`, then `cd ios && pod install`, and commit the
 regenerated `Podfile.lock` after verification. Run
 `flutter build ios --simulator --debug` and exercise WebView navigation and

@@ -20,3 +20,6 @@ constructors, represent async UI with `AsyncLoading`, `AsyncData`, and
 `AsyncError`, keep route mapping in `AppRouter`, and add a widget test using a
 fake repository. Models should remain immutable. Run `flutter analyze` and
 `flutter test` before pushing changes.
+
+External service URLs must use HTTPS. The only intentional HTTP URL is the
+loopback chart server at `127.0.0.1`, which never leaves the device.
