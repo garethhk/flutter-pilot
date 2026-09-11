@@ -124,54 +124,59 @@ class _HomeState extends State<Home> {
   }
 
   Widget _buildRow(Menu reportType, BuildContext context) {
-    return InkWell(
-      child: Card(
-        child: Column(
-          children: [
-            Semantics(
-              image: true,
-              label: '${reportType.name} 預覽圖片',
-              child: ExtendedImage.network(
-                reportType.image.isEmpty
-                    ? DEFAULT_REPORT_IMG
-                    : reportType.image,
-                fit: BoxFit.cover,
-                height: 200,
-                width: double.infinity,
-                cache: true,
-                loadStateChanged: (state) =>
-                    state.extendedImageLoadState == LoadState.failed
-                    ? const SizedBox(
-                        height: 200,
-                        width: double.infinity,
-                        child: Icon(Icons.broken_image_outlined),
-                      )
-                    : null,
+    return Semantics(
+      button: true,
+      label: reportType.name,
+      hint: '開啟報告',
+      child: InkWell(
+        child: Card(
+          child: Column(
+            children: [
+              Semantics(
+                image: true,
+                label: '${reportType.name} 預覽圖片',
+                child: ExtendedImage.network(
+                  reportType.image.isEmpty
+                      ? DEFAULT_REPORT_IMG
+                      : reportType.image,
+                  fit: BoxFit.cover,
+                  height: 200,
+                  width: double.infinity,
+                  cache: true,
+                  loadStateChanged: (state) =>
+                      state.extendedImageLoadState == LoadState.failed
+                      ? const SizedBox(
+                          height: 200,
+                          width: double.infinity,
+                          child: Icon(Icons.broken_image_outlined),
+                        )
+                      : null,
+                ),
               ),
-            ),
-            Container(
-              padding: EdgeInsets.all(WHITE_SPACE_M),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(), // fill width
-                  Text(reportType.name, style: _biggerFont),
-                  Text(reportType.description, style: _smallerFont),
-                ],
+              Container(
+                padding: EdgeInsets.all(WHITE_SPACE_M),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(), // fill width
+                    Text(reportType.name, style: _biggerFont),
+                    Text(reportType.description, style: _smallerFont),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+        onTap: () {
+          AppRouter.openReport(
+            context,
+            reportType,
+            analysisService: widget.analysisService,
+            photoGalleryService: widget.photoGalleryService,
+            apiClient: widget.apiClient,
+          );
+        },
       ),
-      onTap: () {
-        AppRouter.openReport(
-          context,
-          reportType,
-          analysisService: widget.analysisService,
-          photoGalleryService: widget.photoGalleryService,
-          apiClient: widget.apiClient,
-        );
-      },
     );
   }
 }

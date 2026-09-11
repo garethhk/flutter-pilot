@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:foo/core/app_dependencies.dart';
@@ -84,5 +85,21 @@ void main() {
 
     expect(find.text('Daily report'), findsWidgets);
     expect(find.text('暂无数据'), findsOneWidget);
+  });
+
+  testWidgets('Home remains usable with large text', (tester) async {
+    await tester.pumpWidget(
+      MediaQuery(
+        data: const MediaQueryData(textScaler: TextScaler.linear(2)),
+        child: MyApp(
+          dependencies: AppDependencies(menuRepository: _FakeMenuRepository()),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.text('Injected report'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

@@ -237,6 +237,7 @@ class _PhotoGalleryListState extends State<PhotoGalleryList> {
                     labelText: '相簿链接',
                     prefixIcon: const Icon(Icons.link),
                     suffixIcon: IconButton(
+                      tooltip: '清除相簿链接',
                       onPressed: _textController.clear,
                       icon: const Icon(Icons.clear),
                     ),
