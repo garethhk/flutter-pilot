@@ -9,14 +9,15 @@ import 'package:foo/features/reports/demark_report.dart';
 import 'package:foo/features/backtesting/backtracking.dart';
 import 'package:foo/models/menu.dart';
 import 'package:foo/services/api_client.dart';
+import 'package:foo/services/analysis.dart';
 
 void main() {
-  tearDown(() => ApiClient.client.close());
+  tearDown(() => LegacyApiClient.client.close());
 
   testWidgets(
     'RPS report handles missing optional fields and displays scores',
     (tester) async {
-      ApiClient.client = MockClient(
+      LegacyApiClient.client = MockClient(
         (_) async => http.Response(
           jsonEncode({
             'items': [
@@ -31,6 +32,9 @@ void main() {
           home: DduReport(
             reportType: Menu(name: 'RPS', url: '/rps'),
             dataType: DataType.rps,
+            analysisService: AnalysisService(
+              apiClient: ApiClient(client: LegacyApiClient.client),
+            ),
           ),
         ),
       );
@@ -42,7 +46,7 @@ void main() {
 
   testWidgets('Report can retry after a network failure', (tester) async {
     var calls = 0;
-    ApiClient.client = MockClient(
+    LegacyApiClient.client = MockClient(
       (_) async => ++calls == 1
           ? http.Response('offline', 503)
           : http.Response('{"resultList": []}', 200),
@@ -51,6 +55,9 @@ void main() {
       MaterialApp(
         home: DeMarkReport(
           reportType: Menu(name: 'DeMark', url: '/demark'),
+          analysisService: AnalysisService(
+            apiClient: ApiClient(client: LegacyApiClient.client),
+          ),
         ),
       ),
     );
@@ -66,7 +73,7 @@ void main() {
     tester,
   ) async {
     Uri? requested;
-    ApiClient.client = MockClient((request) async {
+    LegacyApiClient.client = MockClient((request) async {
       requested = request.url;
       return http.Response(
         '{"category":["2026-01-01","2026-01-02"],"r1":[1,2.5],"r2":[2,3]}',
@@ -92,8 +99,8 @@ void main() {
     expect(requested!.queryParameters.containsKey('unUsed'), isFalse);
     expect(tester.takeException(), isNull);
 
-    ApiClient.client.close();
-    ApiClient.client = MockClient(
+    LegacyApiClient.client.close();
+    LegacyApiClient.client = MockClient(
       (_) async => http.Response('{"code":100}', 200),
     );
     await tester.enterText(find.byType(TextField), 'invalid-symbol');

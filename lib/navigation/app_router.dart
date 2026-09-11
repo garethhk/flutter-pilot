@@ -15,32 +15,33 @@ class AppRouter {
   static Future<void> openReport(
     BuildContext context,
     Menu menu, {
-    AnalysisService analysisService = const AnalysisService(),
+    AnalysisService? analysisService,
   }) async {
+    final service = analysisService ?? AnalysisService();
     final page = switch (menu.router) {
       'BackTracking' => BackTracking(reportType: menu),
       'ReportDetail' => ReportDetail(
         reportType: menu,
-        analysisService: analysisService,
+        analysisService: service,
       ),
       'DeMarkReport' => DeMarkReport(
         reportType: menu,
-        analysisService: analysisService,
+        analysisService: service,
       ),
       'DduReport' => DduReport(
         reportType: menu,
         dataType: DataType.ddu,
-        analysisService: analysisService,
+        analysisService: service,
       ),
       'RpsReport' => DduReport(
         reportType: menu,
         dataType: DataType.rps,
-        analysisService: analysisService,
+        analysisService: service,
       ),
       'StockReport' => DduReport(
         reportType: menu,
         dataType: DataType.stock,
-        analysisService: analysisService,
+        analysisService: service,
       ),
       'PhotoGallery' => PhotoGalleryList(reportType: menu),
       _ => null,

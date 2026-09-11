@@ -11,10 +11,8 @@ import '../../services/analysis.dart';
 class ReportDetail extends StatefulWidget {
   final Menu reportType;
 
-  ReportDetail({
-    required this.reportType,
-    this.analysisService = const AnalysisService(),
-  });
+  ReportDetail({required this.reportType, AnalysisService? analysisService})
+    : analysisService = analysisService ?? AnalysisService();
 
   final AnalysisService analysisService;
 

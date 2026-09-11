@@ -3,13 +3,16 @@ import '../models/menu.dart';
 import 'api_client.dart';
 
 class ConfigService {
+  ConfigService({ApiClient? apiClient}) : apiClient = apiClient ?? ApiClient();
+
+  final ApiClient apiClient;
   static List<Menu> getLocalMenu() => REPORT_TYPES
       .map((item) => Menu.fromJson(Map<String, dynamic>.from(item)))
       .toList();
-  static Future<List<Menu>> getMenu() async {
+  Future<List<Menu>> fetchMenu() async {
     final menus = getLocalMenu();
     try {
-      final data = await ApiClient.get(Uri.parse(MEMU_URL));
+      final data = await apiClient.get(Uri.parse(MEMU_URL));
       if (data is! List) throw const FormatException('Expected menu list');
       for (final json in data) {
         if (json is! Map<String, dynamic>)
@@ -28,4 +31,8 @@ class ConfigService {
       return getLocalMenu();
     }
   }
+
+  static Future<List<Menu>> getMenu() =>
+      ConfigService(apiClient: ApiClient(client: LegacyApiClient.client))
+          .fetchMenu();
 }

@@ -11,7 +11,7 @@ import 'package:foo/services/config.dart';
 import 'package:foo/services/photoGallery.dart';
 
 void main() {
-  tearDown(() => ApiClient.client.close());
+  tearDown(() => LegacyApiClient.client.close());
   test('Partial legacy payloads default optional fields safely', () {
     final analysis = Analysis.fromJson({
       'items': [
@@ -27,7 +27,7 @@ void main() {
   });
 
   test('Offline menu keeps every bundled route', () async {
-    ApiClient.client = MockClient(
+    LegacyApiClient.client = MockClient(
       (_) async => throw http.ClientException('offline'),
     );
     final menu = await ConfigService.getMenu();
@@ -39,7 +39,7 @@ void main() {
     'Newer remote menu replaces complete metadata and adds new entries',
     () async {
       final local = ConfigService.getLocalMenu().first;
-      ApiClient.client = MockClient(
+      LegacyApiClient.client = MockClient(
         (_) async => http.Response(
           jsonEncode([
             {
@@ -63,16 +63,18 @@ void main() {
   );
 
   test('Invalid JSON and HTTP failures return report failure', () async {
-    ApiClient.client = MockClient((_) async => http.Response('not json', 200));
-    expect(await const AnalysisService().getAnalysis('/test'), isNull);
-    ApiClient.client.close();
-    ApiClient.client = MockClient((_) async => http.Response('{}', 503));
-    expect(await const AnalysisService().getAnalysis('/test'), isNull);
+    LegacyApiClient.client = MockClient(
+      (_) async => http.Response('not json', 200),
+    );
+    expect(await AnalysisService().getAnalysis('/test'), isNull);
+    LegacyApiClient.client.close();
+    LegacyApiClient.client = MockClient((_) async => http.Response('{}', 503));
+    expect(await AnalysisService().getAnalysis('/test'), isNull);
   });
 
   test('Gallery download preserves nested query parameters', () async {
     const url = 'https://example.com/answer?id=1&next=2';
-    ApiClient.client = MockClient((request) async {
+    LegacyApiClient.client = MockClient((request) async {
       expect(request.url.queryParameters['detailUrl'], url);
       expect(request.url.queryParameters.keys, ['detailUrl']);
       return http.Response('', 200);

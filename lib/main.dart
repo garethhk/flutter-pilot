@@ -4,11 +4,12 @@ import './core/app_dependencies.dart';
 import './features/home/home.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, this.dependencies = const AppDependencies()});
+  MyApp({super.key, AppDependencies? dependencies})
+    : dependencies = dependencies ?? AppDependencies();
 
   final AppDependencies dependencies;
 

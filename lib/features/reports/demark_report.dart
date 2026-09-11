@@ -12,10 +12,8 @@ import '../../services/analysis.dart';
 class DeMarkReport extends StatefulWidget {
   final Menu reportType;
 
-  DeMarkReport({
-    required this.reportType,
-    this.analysisService = const AnalysisService(),
-  });
+  DeMarkReport({required this.reportType, AnalysisService? analysisService})
+    : analysisService = analysisService ?? AnalysisService();
 
   final AnalysisService analysisService;
 

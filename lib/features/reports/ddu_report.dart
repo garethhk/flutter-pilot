@@ -17,8 +17,8 @@ class DduReport extends StatefulWidget {
   DduReport({
     required this.reportType,
     required this.dataType,
-    this.analysisService = const AnalysisService(),
-  });
+    AnalysisService? analysisService,
+  }) : analysisService = analysisService ?? AnalysisService();
 
   final AnalysisService analysisService;
 

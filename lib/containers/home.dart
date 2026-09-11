@@ -10,11 +10,12 @@ import '../models/menu.dart';
 import '../navigation/app_router.dart';
 
 class Home extends StatefulWidget {
-  const Home({
+  Home({
     super.key,
-    this.menuRepository = const ConfigMenuRepository(),
-    this.analysisService = const AnalysisService(),
-  });
+    MenuRepository? menuRepository,
+    AnalysisService? analysisService,
+  }) : menuRepository = menuRepository ?? const ConfigMenuRepository(),
+       analysisService = analysisService ?? AnalysisService();
 
   final MenuRepository menuRepository;
   final AnalysisService analysisService;

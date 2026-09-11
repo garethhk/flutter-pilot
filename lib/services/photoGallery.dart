@@ -4,7 +4,7 @@ import 'api_client.dart';
 
 class PhotoGalleryService {
   static Future<List<Question>> getList(String url) async {
-    final data = await ApiClient.get(
+    final data = await LegacyApiClient.get(
       Uri.parse(PHOTO_GALLERY_HOST).resolve(url),
     );
     if (data is! List) throw const FormatException('Expected gallery list');
@@ -24,7 +24,7 @@ class PhotoGalleryService {
     try {
       final uri = Uri.parse(PHOTO_GALLERY_DOWNLOAD_URL)
           .replace(queryParameters: {'detailUrl': url});
-      final response = await ApiClient.client
+      final response = await LegacyApiClient.client
           .get(uri)
           .timeout(ApiClient.timeout);
       return response.statusCode == 200;

@@ -3,10 +3,11 @@ import '../services/analysis.dart';
 
 /// Composition root for application services.
 class AppDependencies {
-  const AppDependencies({
-    this.menuRepository = const ConfigMenuRepository(),
-    this.analysisService = const AnalysisService(),
-  });
+  AppDependencies({
+    MenuRepository? menuRepository,
+    AnalysisService? analysisService,
+  }) : menuRepository = menuRepository ?? ConfigMenuRepository(),
+       analysisService = analysisService ?? AnalysisService();
 
   final MenuRepository menuRepository;
   final AnalysisService analysisService;
