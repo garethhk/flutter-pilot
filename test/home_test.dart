@@ -102,4 +102,48 @@ void main() {
     expect(find.text('Injected report'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('Home report flow can recover from an API error', (tester) async {
+    var calls = 0;
+    final client = MockClient((_) async {
+      calls++;
+      return calls == 1
+          ? http.Response('offline', 503)
+          : http.Response(
+              '{"resultList": [], "description": "", "generateTime": ""}',
+              200,
+            );
+    });
+    await tester.pumpWidget(
+      MyApp(
+        dependencies: AppDependencies(
+          menuRepository: _FakeMenuRepository(
+            menu: [
+              Menu(
+                id: 'report',
+                group: 1,
+                groupName: 'Reports',
+                name: 'Retry report',
+                router: 'ReportDetail',
+                url: '/analysis/retry',
+              ),
+            ],
+          ),
+          analysisService: AnalysisService(
+            apiClient: ApiClient(client: client),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.tap(find.text('Retry report').first);
+    await tester.pumpAndSettle();
+    expect(find.text('数据加载失败，请检查网络后重试'), findsOneWidget);
+
+    await tester.tap(find.text('重试'));
+    await tester.pumpAndSettle();
+    expect(find.text('暂无数据'), findsOneWidget);
+    expect(calls, 2);
+  });
 }
