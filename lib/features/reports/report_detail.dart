@@ -11,7 +11,12 @@ import '../../services/analysis.dart';
 class ReportDetail extends StatefulWidget {
   final Menu reportType;
 
-  ReportDetail({required this.reportType});
+  ReportDetail({
+    required this.reportType,
+    this.analysisService = const AnalysisService(),
+  });
+
+  final AnalysisService analysisService;
 
   @override
   _ReportDetailState createState() =>
@@ -167,7 +172,7 @@ class _ReportDetailState extends State<ReportDetail> {
       _loading = true;
       _failed = false;
     });
-    Analysis? data = await AnalysisService.getAnalysis(reportType.url);
+    Analysis? data = await widget.analysisService.getAnalysis(reportType.url);
     if (!mounted) return;
     setState(() {
       _loading = false;

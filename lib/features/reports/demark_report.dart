@@ -12,7 +12,12 @@ import '../../services/analysis.dart';
 class DeMarkReport extends StatefulWidget {
   final Menu reportType;
 
-  DeMarkReport({required this.reportType});
+  DeMarkReport({
+    required this.reportType,
+    this.analysisService = const AnalysisService(),
+  });
+
+  final AnalysisService analysisService;
 
   @override
   _DeMarkReportState createState() =>
@@ -190,7 +195,7 @@ class _DeMarkReportState extends State<DeMarkReport> {
       _loading = true;
       _failed = false;
     });
-    Analysis? data = await AnalysisService.getAnalysis(reportType.url);
+    Analysis? data = await widget.analysisService.getAnalysis(reportType.url);
     if (!mounted) return;
     setState(() {
       _loading = false;

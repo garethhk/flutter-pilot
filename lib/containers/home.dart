@@ -5,13 +5,19 @@ import 'package:grouped_list/grouped_list.dart';
 import '../styles/Themes.dart';
 import '../core/async_state.dart';
 import '../services/menu_repository.dart';
+import '../services/analysis.dart';
 import '../models/menu.dart';
 import '../navigation/app_router.dart';
 
 class Home extends StatefulWidget {
-  const Home({super.key, this.menuRepository = const ConfigMenuRepository()});
+  const Home({
+    super.key,
+    this.menuRepository = const ConfigMenuRepository(),
+    this.analysisService = const AnalysisService(),
+  });
 
   final MenuRepository menuRepository;
+  final AnalysisService analysisService;
 
   @override
   State<Home> createState() => _HomeState();
@@ -135,7 +141,11 @@ class _HomeState extends State<Home> {
         ),
       ),
       onTap: () {
-        AppRouter.openReport(context, reportType);
+        AppRouter.openReport(
+          context,
+          reportType,
+          analysisService: widget.analysisService,
+        );
       },
     );
   }

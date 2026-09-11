@@ -14,7 +14,13 @@ class DduReport extends StatefulWidget {
   final Menu reportType;
   final DataType dataType;
 
-  DduReport({required this.reportType, required this.dataType});
+  DduReport({
+    required this.reportType,
+    required this.dataType,
+    this.analysisService = const AnalysisService(),
+  });
+
+  final AnalysisService analysisService;
 
   @override
   _DduReportState createState() =>
@@ -301,7 +307,7 @@ class _DduReportState extends State<DduReport> {
       _loading = true;
       _failed = false;
     });
-    Analysis? data = await AnalysisService.getAnalysis(reportType.url);
+    Analysis? data = await widget.analysisService.getAnalysis(reportType.url);
     if (!mounted) return;
     setState(() {
       _loading = false;

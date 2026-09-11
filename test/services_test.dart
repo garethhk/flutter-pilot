@@ -64,10 +64,10 @@ void main() {
 
   test('Invalid JSON and HTTP failures return report failure', () async {
     ApiClient.client = MockClient((_) async => http.Response('not json', 200));
-    expect(await AnalysisService.getAnalysis('/test'), isNull);
+    expect(await const AnalysisService().getAnalysis('/test'), isNull);
     ApiClient.client.close();
     ApiClient.client = MockClient((_) async => http.Response('{}', 503));
-    expect(await AnalysisService.getAnalysis('/test'), isNull);
+    expect(await const AnalysisService().getAnalysis('/test'), isNull);
   });
 
   test('Gallery download preserves nested query parameters', () async {
