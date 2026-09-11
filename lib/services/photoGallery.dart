@@ -36,13 +36,3 @@ class PhotoGalleryService {
     }
   }
 }
-
-class LegacyPhotoGalleryService {
-  static Future<List<Question>> getList(String url) =>
-      PhotoGalleryService(apiClient: ApiClient(client: LegacyApiClient.client))
-          .getList(url);
-
-  static Future<bool> downloadDetail(String url) =>
-      PhotoGalleryService(apiClient: ApiClient(client: LegacyApiClient.client))
-          .downloadDetail(url);
-}

@@ -24,10 +24,3 @@ class ApiClient {
 
   void close() => _client.close();
 }
-
-/// Temporary compatibility seam for legacy tests.
-class LegacyApiClient {
-  static http.Client client = http.Client();
-
-  static Future<dynamic> get(Uri uri) => ApiClient(client: client).get(uri);
-}

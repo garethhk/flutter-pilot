@@ -6,7 +6,7 @@ class ConfigService {
   ConfigService({ApiClient? apiClient}) : apiClient = apiClient ?? ApiClient();
 
   final ApiClient apiClient;
-  static List<Menu> getLocalMenu() => REPORT_TYPES
+  List<Menu> getLocalMenu() => REPORT_TYPES
       .map((item) => Menu.fromJson(Map<String, dynamic>.from(item)))
       .toList();
   Future<List<Menu>> fetchMenu() async {
@@ -31,8 +31,4 @@ class ConfigService {
       return getLocalMenu();
     }
   }
-
-  static Future<List<Menu>> getMenu() =>
-      ConfigService(apiClient: ApiClient(client: LegacyApiClient.client))
-          .fetchMenu();
 }

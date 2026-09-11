@@ -12,12 +12,14 @@ import 'package:foo/services/api_client.dart';
 import 'package:foo/services/analysis.dart';
 
 void main() {
-  tearDown(() => LegacyApiClient.client.close());
+  late http.Client client;
+  setUp(() => client = http.Client());
+  tearDown(() => client.close());
 
   testWidgets(
     'RPS report handles missing optional fields and displays scores',
     (tester) async {
-      LegacyApiClient.client = MockClient(
+      client = MockClient(
         (_) async => http.Response(
           jsonEncode({
             'items': [
@@ -33,7 +35,7 @@ void main() {
             reportType: Menu(name: 'RPS', url: '/rps'),
             dataType: DataType.rps,
             analysisService: AnalysisService(
-              apiClient: ApiClient(client: LegacyApiClient.client),
+              apiClient: ApiClient(client: client),
             ),
           ),
         ),
@@ -46,7 +48,7 @@ void main() {
 
   testWidgets('Report can retry after a network failure', (tester) async {
     var calls = 0;
-    LegacyApiClient.client = MockClient(
+    client = MockClient(
       (_) async => ++calls == 1
           ? http.Response('offline', 503)
           : http.Response('{"resultList": []}', 200),
@@ -56,7 +58,7 @@ void main() {
         home: DeMarkReport(
           reportType: Menu(name: 'DeMark', url: '/demark'),
           analysisService: AnalysisService(
-            apiClient: ApiClient(client: LegacyApiClient.client),
+            apiClient: ApiClient(client: client),
           ),
         ),
       ),
@@ -73,7 +75,7 @@ void main() {
     tester,
   ) async {
     Uri? requested;
-    LegacyApiClient.client = MockClient((request) async {
+    client = MockClient((request) async {
       requested = request.url;
       return http.Response(
         '{"category":["2026-01-01","2026-01-02"],"r1":[1,2.5],"r2":[2,3]}',
@@ -87,7 +89,7 @@ void main() {
             name: 'Backtest',
             url: '/backtracking/{code}?startDate=START_DATE',
           ),
-          apiClient: ApiClient(client: LegacyApiClient.client),
+          apiClient: ApiClient(client: client),
         ),
       ),
     );
@@ -100,10 +102,8 @@ void main() {
     expect(requested!.queryParameters.containsKey('unUsed'), isFalse);
     expect(tester.takeException(), isNull);
 
-    LegacyApiClient.client.close();
-    LegacyApiClient.client = MockClient(
-      (_) async => http.Response('{"code":100}', 200),
-    );
+    client.close();
+    client = MockClient((_) async => http.Response('{"code":100}', 200));
     await tester.enterText(find.byType(TextField), 'invalid-symbol');
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();

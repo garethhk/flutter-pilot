@@ -10,7 +10,7 @@ final class ConfigMenuRepository implements MenuRepository {
   const ConfigMenuRepository();
 
   @override
-  List<Menu> get localMenu => ConfigService.getLocalMenu();
+  List<Menu> get localMenu => ConfigService().getLocalMenu();
 
   @override
   Future<List<Menu>> fetchMenu() => ConfigService().fetchMenu();

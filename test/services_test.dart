@@ -11,7 +11,9 @@ import 'package:foo/services/config.dart';
 import 'package:foo/services/photoGallery.dart';
 
 void main() {
-  tearDown(() => LegacyApiClient.client.close());
+  late http.Client client;
+  setUp(() => client = http.Client());
+  tearDown(() => client.close());
   test('Partial legacy payloads default optional fields safely', () {
     final analysis = Analysis.fromJson({
       'items': [
@@ -27,19 +29,18 @@ void main() {
   });
 
   test('Offline menu keeps every bundled route', () async {
-    LegacyApiClient.client = MockClient(
-      (_) async => throw http.ClientException('offline'),
-    );
-    final menu = await ConfigService.getMenu();
-    expect(menu.length, ConfigService.getLocalMenu().length);
+    client = MockClient((_) async => throw http.ClientException('offline'));
+    final menu = await ConfigService(apiClient: ApiClient(client: client))
+        .fetchMenu();
+    expect(menu.length, ConfigService().getLocalMenu().length);
     expect(menu.map((item) => item.router), contains('BackTracking'));
   });
 
   test(
     'Newer remote menu replaces complete metadata and adds new entries',
     () async {
-      final local = ConfigService.getLocalMenu().first;
-      LegacyApiClient.client = MockClient(
+      final local = ConfigService().getLocalMenu().first;
+      client = MockClient(
         (_) async => http.Response(
           jsonEncode([
             {
@@ -54,7 +55,8 @@ void main() {
           200,
         ),
       );
-      final menu = await ConfigService.getMenu();
+      final menu = await ConfigService(apiClient: ApiClient(client: client))
+          .fetchMenu();
       expect(menu.first.name, 'Updated');
       expect(menu.first.group, 99);
       expect(menu.first.version, local.version + 1);
@@ -63,25 +65,36 @@ void main() {
   );
 
   test('Invalid JSON and HTTP failures return report failure', () async {
-    LegacyApiClient.client = MockClient(
-      (_) async => http.Response('not json', 200),
+    client = MockClient((_) async => http.Response('not json', 200));
+    expect(
+      await AnalysisService(apiClient: ApiClient(client: client))
+          .getAnalysis('/test'),
+      isNull,
     );
-    expect(await AnalysisService().getAnalysis('/test'), isNull);
-    LegacyApiClient.client.close();
-    LegacyApiClient.client = MockClient((_) async => http.Response('{}', 503));
-    expect(await AnalysisService().getAnalysis('/test'), isNull);
+    client.close();
+    client = MockClient((_) async => http.Response('{}', 503));
+    expect(
+      await AnalysisService(apiClient: ApiClient(client: client))
+          .getAnalysis('/test'),
+      isNull,
+    );
   });
 
   test('Gallery download preserves nested query parameters', () async {
     const url = 'https://example.com/answer?id=1&next=2';
-    LegacyApiClient.client = MockClient((request) async {
+    client = MockClient((request) async {
       expect(request.url.queryParameters['detailUrl'], url);
       expect(request.url.queryParameters.keys, ['detailUrl']);
       return http.Response('', 200);
     });
-    expect(await LegacyPhotoGalleryService.downloadDetail(url), isTrue);
     expect(
-      await LegacyPhotoGalleryService.downloadDetail('file:///private'),
+      await PhotoGalleryService(apiClient: ApiClient(client: client))
+          .downloadDetail(url),
+      isTrue,
+    );
+    expect(
+      await PhotoGalleryService(apiClient: ApiClient(client: client))
+          .downloadDetail('file:///private'),
       isFalse,
     );
   });
