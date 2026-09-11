@@ -3,20 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:grouped_list/grouped_list.dart';
 
 import '../styles/Themes.dart';
-import '../services/config.dart';
+import '../core/async_state.dart';
+import '../services/menu_repository.dart';
 import '../models/menu.dart';
 import '../navigation/app_router.dart';
 
 class Home extends StatefulWidget {
-  const Home({super.key});
+  const Home({super.key, this.menuRepository = const ConfigMenuRepository()});
+
+  final MenuRepository menuRepository;
 
   @override
   State<Home> createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
-  List<Menu> _reportTypes = ConfigService.getLocalMenu();
-  bool _refreshing = false;
+  late AsyncState<List<Menu>> _menuState;
 
   static const _biggerFont = TextStyle(fontSize: 18.0);
   static const _smallerFont = TextStyle(fontSize: 14.0);
@@ -24,18 +26,32 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
+    _menuState = AsyncData(widget.menuRepository.localMenu);
     _refreshMenu();
   }
 
   Future<void> _refreshMenu() async {
-    if (_refreshing) return;
-    setState(() => _refreshing = true);
-    final menu = await ConfigService.getMenu();
-    if (!mounted) return;
-    setState(() {
-      _reportTypes = menu;
-      _refreshing = false;
-    });
+    if (_menuState is AsyncLoading<List<Menu>>) return;
+    final previous = switch (_menuState) {
+      AsyncData<List<Menu>>(:final value) => value,
+      AsyncError<List<Menu>>(:final previous) => previous,
+      AsyncLoading<List<Menu>>(:final previous) => previous,
+    };
+    setState(() => _menuState = AsyncLoading(previous: previous));
+    try {
+      final menu = await widget.menuRepository.fetchMenu();
+      if (!mounted) return;
+      setState(() => _menuState = AsyncData(menu));
+    } on Object catch (error, stackTrace) {
+      if (!mounted) return;
+      setState(
+        () => _menuState = AsyncError(
+          error,
+          previous: previous,
+          stackTrace: stackTrace,
+        ),
+      );
+    }
   }
 
   @override
@@ -46,8 +62,10 @@ class _HomeState extends State<Home> {
         actions: [
           IconButton(
             tooltip: '重新整理菜单',
-            onPressed: _refreshing ? null : _refreshMenu,
-            icon: _refreshing
+            onPressed: _menuState is AsyncLoading<List<Menu>>
+                ? null
+                : _refreshMenu,
+            icon: _menuState is AsyncLoading<List<Menu>>
                 ? const SizedBox(
                     width: 20,
                     height: 20,
@@ -65,6 +83,11 @@ class _HomeState extends State<Home> {
   }
 
   Widget _reportType(BuildContext context) {
+    final reportTypes = switch (_menuState) {
+      AsyncData<List<Menu>>(:final value) => value,
+      AsyncLoading<List<Menu>>(:final previous) => previous ?? const <Menu>[],
+      AsyncError<List<Menu>>(:final previous) => previous ?? const <Menu>[],
+    };
     return GroupedListView<Menu, int>(
       // itemCount: _reportTypes.length * 2,
       padding: const EdgeInsets.all(16.0),
@@ -81,7 +104,7 @@ class _HomeState extends State<Home> {
         padding: EdgeInsets.all(WHITE_SPACE_M),
         child: Text(groupItem.groupName, style: _biggerFont),
       ),
-      elements: _reportTypes,
+      elements: reportTypes,
     );
   }
 
