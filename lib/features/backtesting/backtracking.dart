@@ -49,16 +49,16 @@ class _BackTrackingState extends State<BackTracking> {
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      appBar: new AppBar(title: new Text(reportType.name)),
+    return Scaffold(
+      appBar: AppBar(title: Text(reportType.name)),
       //   body: _reportDetail(context),
       // );
       body: SingleChildScrollView(
-        child: new Column(
+        child: Column(
           children: [
             Container(
               padding: EdgeInsets.all(5.0),
-              child: new TextField(
+              child: TextField(
                 onSubmitted: (value) {
                   _searchText = value;
                   fetchStock();
@@ -69,33 +69,33 @@ class _BackTrackingState extends State<BackTracking> {
                 ),
               ),
             ),
-            new Divider(),
-            new ListTile(title: new Text("开始日期")),
-            new OverflowBar(
+            Divider(),
+            ListTile(title: Text("开始日期")),
+            OverflowBar(
               alignment: MainAxisAlignment.start,
               children: [
-                new ElevatedButton(
+                ElevatedButton(
                   child: Text('三个月'),
                   onPressed: () {
                     _backDays = 100;
                     fetchData();
                   },
                 ),
-                new ElevatedButton(
+                ElevatedButton(
                   child: Text('六个月'),
                   onPressed: () {
                     _backDays = 200;
                     fetchData();
                   },
                 ),
-                new ElevatedButton(
+                ElevatedButton(
                   child: Text('一年'),
                   onPressed: () {
                     _backDays = 365;
                     fetchData();
                   },
                 ),
-                new ElevatedButton(
+                ElevatedButton(
                   child: Text('三年'),
                   onPressed: () {
                     _backDays = 365 * 3;
@@ -104,15 +104,15 @@ class _BackTrackingState extends State<BackTracking> {
                 ),
               ],
             ),
-            new Divider(),
-            new ListTile(
-              subtitle: new Text(
+            Divider(),
+            ListTile(
+              subtitle: Text(
                 "日期: ${DateFormat('yyyy-MM-dd').format(_time)}\nr1: ${_measures['r1']}\nr2: ${_measures['r2']}",
               ),
-              title: new Text("$_stockName | $_stockNumber "),
+              title: Text("$_stockName | $_stockNumber "),
             ),
-            new Divider(),
-            new Container(height: 300.0, child: _reportDetail(context)),
+            Divider(),
+            Container(height: 300.0, child: _reportDetail(context)),
           ],
         ),
       ),
@@ -128,34 +128,32 @@ class _BackTrackingState extends State<BackTracking> {
     if (_seriesList.isEmpty || _seriesList.first.data.isEmpty)
       return const Center(child: Text('暂无数据'));
 
-    return new ListView(
+    return ListView(
       scrollDirection: Axis.horizontal,
       children: [
-        new Container(
+        Container(
           width: (5 * _backDays).toDouble(),
           child: charts.TimeSeriesChart(
             _seriesList,
             animate: !MediaQuery.disableAnimationsOf(context),
-            primaryMeasureAxis: new charts.NumericAxisSpec(
-              tickProviderSpec: new charts.BasicNumericTickProviderSpec(
+            primaryMeasureAxis: charts.NumericAxisSpec(
+              tickProviderSpec: charts.BasicNumericTickProviderSpec(
                 zeroBound: false,
                 desiredTickCount: 10,
               ),
             ),
-            domainAxis: new charts.DateTimeAxisSpec(
-              tickProviderSpec: new charts.DayTickProviderSpec(
-                increments: [10],
-              ),
-              tickFormatterSpec: new charts.AutoDateTimeTickFormatterSpec(
-                day: new charts.TimeFormatterSpec(
+            domainAxis: charts.DateTimeAxisSpec(
+              tickProviderSpec: charts.DayTickProviderSpec(increments: [10]),
+              tickFormatterSpec: charts.AutoDateTimeTickFormatterSpec(
+                day: charts.TimeFormatterSpec(
                   format: 'd',
                   transitionFormat: 'yyyy-MM-dd',
                 ),
               ),
             ),
-            behaviors: [new charts.SeriesLegend()],
+            behaviors: [charts.SeriesLegend()],
             selectionModels: [
-              new charts.SelectionModelConfig(
+              charts.SelectionModelConfig(
                 type: charts.SelectionModelType.info,
                 changedListener: _onSelectionChanged,
               ),
@@ -239,14 +237,14 @@ class _BackTrackingState extends State<BackTracking> {
         .toList();
 
     return [
-      new charts.Series<LinearSales, DateTime>(
+      charts.Series<LinearSales, DateTime>(
         id: 'r1',
         colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
         domainFn: (LinearSales sales, _) => sales.date,
         measureFn: (LinearSales sales, _) => sales.r1,
         data: data,
       ),
-      new charts.Series<LinearSales, DateTime>(
+      charts.Series<LinearSales, DateTime>(
         id: 'r2',
         colorFn: (_, __) => charts.MaterialPalette.black,
         domainFn: (LinearSales sales, _) => sales.date,

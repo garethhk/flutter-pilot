@@ -27,7 +27,7 @@ class _ReportDetailState extends State<ReportDetail> {
   List<Map<String, dynamic>> _detailData = [];
   String _detailDes = "";
   String _detailTime = "";
-  DateFormat _formatter = new DateFormat('yyyy年MM月dd日');
+  DateFormat _formatter = DateFormat('yyyy年MM月dd日');
 
   // ui control
   bool _showDes = false;
