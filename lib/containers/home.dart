@@ -12,39 +12,59 @@ import './DeMarkReport.dart';
 import './DduReport.dart';
 
 class Home extends StatefulWidget {
+  const Home({super.key});
+
   @override
-  _HomeState createState() => _HomeState();
+  State<Home> createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
-  late List<Menu> _reportTypes;
+  List<Menu> _reportTypes = ConfigService.getLocalMenu();
+  bool _refreshing = false;
 
-  final _biggerFont = const TextStyle(fontSize: 18.0);
-  final _smallerFont = const TextStyle(fontSize: 14.0);
+  static const _biggerFont = TextStyle(fontSize: 18.0);
+  static const _smallerFont = TextStyle(fontSize: 14.0);
 
-  _HomeState() {
-    List<Menu> menu = ConfigService.getLocalMenu();
-    _reportTypes = menu;
-
-    // fetch backend
-    // fetchMenu();
-
-    // start h5 app server
+  @override
+  void initState() {
+    super.initState();
+    _refreshMenu();
   }
 
-  fetchMenu() async {
-    List<Menu> menu = await ConfigService.getMenu();
+  Future<void> _refreshMenu() async {
+    if (_refreshing) return;
+    setState(() => _refreshing = true);
+    final menu = await ConfigService.getMenu();
     if (!mounted) return;
     setState(() {
       _reportTypes = menu;
+      _refreshing = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: new AppBar(title: new Text('希望 2.0')),
-      body: _reportType(context),
+      appBar: AppBar(
+        title: const Text('希望 2.0'),
+        actions: [
+          IconButton(
+            tooltip: '重新整理菜单',
+            onPressed: _refreshing ? null : _refreshMenu,
+            icon: _refreshing
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.refresh),
+          ),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: _refreshMenu,
+        child: _reportType(context),
+      ),
     );
   }
 
