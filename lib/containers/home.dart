@@ -128,12 +128,26 @@ class _HomeState extends State<Home> {
       child: Card(
         child: Column(
           children: [
-            ExtendedImage.network(
-              reportType.image.isEmpty ? DEFAULT_REPORT_IMG : reportType.image,
-              fit: BoxFit.cover,
-              height: 200,
-              width: double.infinity,
-              cache: true,
+            Semantics(
+              image: true,
+              label: '${reportType.name} 預覽圖片',
+              child: ExtendedImage.network(
+                reportType.image.isEmpty
+                    ? DEFAULT_REPORT_IMG
+                    : reportType.image,
+                fit: BoxFit.cover,
+                height: 200,
+                width: double.infinity,
+                cache: true,
+                loadStateChanged: (state) =>
+                    state.extendedImageLoadState == LoadState.failed
+                    ? const SizedBox(
+                        height: 200,
+                        width: double.infinity,
+                        child: Icon(Icons.broken_image_outlined),
+                      )
+                    : null,
+              ),
             ),
             Container(
               padding: EdgeInsets.all(WHITE_SPACE_M),

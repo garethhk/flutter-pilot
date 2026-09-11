@@ -159,11 +159,27 @@ class _PhotoGalleryListState extends State<PhotoGalleryList> {
                               if (preview != null)
                                 Text('共 ${preview.length} 张'),
                               if (image != null)
-                                ExtendedImage.network(
-                                  image,
-                                  height: 400,
-                                  fit: BoxFit.contain,
-                                  cache: true,
+                                Semantics(
+                                  image: true,
+                                  label: '$title 圖片',
+                                  child: ExtendedImage.network(
+                                    image,
+                                    height: 400,
+                                    fit: BoxFit.contain,
+                                    cache: true,
+                                    loadStateChanged: (state) =>
+                                        state.extendedImageLoadState ==
+                                            LoadState.failed
+                                        ? const SizedBox(
+                                            height: 200,
+                                            child: Center(
+                                              child: Icon(
+                                                Icons.broken_image_outlined,
+                                              ),
+                                            ),
+                                          )
+                                        : null,
+                                  ),
                                 ),
                               Wrap(
                                 spacing: 8,
