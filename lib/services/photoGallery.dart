@@ -22,9 +22,8 @@ class PhotoGalleryService {
         target.host.isEmpty)
       return false;
     try {
-      final uri = Uri.parse(
-        PHOTO_GALLERY_DOWNLOAD_URL,
-      ).replace(queryParameters: {'detailUrl': url});
+      final uri = Uri.parse(PHOTO_GALLERY_DOWNLOAD_URL)
+          .replace(queryParameters: {'detailUrl': url});
       final response = await ApiClient.client
           .get(uri)
           .timeout(ApiClient.timeout);

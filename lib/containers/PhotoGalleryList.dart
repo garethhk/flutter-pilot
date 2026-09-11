@@ -1,6 +1,7 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import '../models/menu.dart';
 import '../models/question.dart';
 import '../services/photoGallery.dart';
@@ -75,9 +76,8 @@ class _PhotoGalleryListState extends State<PhotoGalleryList> {
   ).hasMatch(Uri.tryParse(url)?.path ?? '');
   void _message(String message) {
     if (mounted)
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _download() async {

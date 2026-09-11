@@ -201,9 +201,8 @@ class _BackTrackingState extends State<BackTracking> {
       _loading = true;
       _failed = false;
     });
-    final startDate = DateFormat(
-      'yyyy-MM-dd',
-    ).format(_nowDate.subtract(Duration(days: _backDays)));
+    final startDate = DateFormat('yyyy-MM-dd')
+        .format(_nowDate.subtract(Duration(days: _backDays)));
     final uri = Uri.parse(HOST).resolve(
       reportType.url
           .replaceFirst('{code}', Uri.encodeComponent(_stockNumber))
@@ -232,9 +231,9 @@ class _BackTrackingState extends State<BackTracking> {
   static List<charts.Series<LinearSales, DateTime>> _createLineData(
     Map<String, dynamic> result,
   ) {
-    final data = BacktestPoint.parse(
-      result,
-    ).map((point) => LinearSales(point.date, point.r1, point.r2)).toList();
+    final data = BacktestPoint.parse(result)
+        .map((point) => LinearSales(point.date, point.r1, point.r2))
+        .toList();
 
     return [
       new charts.Series<LinearSales, DateTime>(
@@ -284,9 +283,8 @@ class _BackTrackingState extends State<BackTracking> {
 
   void _showError() {
     if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('数据加载失败，请重试')));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('数据加载失败，请重试')));
   }
 
   void _showCupertinoPicker(BuildContext context, stockLists) {
